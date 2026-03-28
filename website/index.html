@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>logd — Local-First Decision Logging</title>
   <meta name="description" content="Log decisions from your AI agent. Semantic search finds the 'why' months later. Private, local, open source.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -132,14 +133,12 @@
       align-items: center;
     }
     .nav-logo {
-      font-family: var(--font-mono);
-      font-size: 20px;
-      font-weight: 500;
-      color: var(--forest);
-      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
     }
-    .nav-logo span {
-      color: var(--moss);
+    .nav-logo img {
+      height: 28px;
+      width: auto;
     }
     .nav-links {
       display: flex; gap: var(--space-md); align-items: center;
@@ -765,13 +764,12 @@
     .footer-brand {
       display: flex;
       flex-direction: column;
+      align-items: flex-start;
       gap: 10px;
     }
     .footer-logo {
-      font-family: var(--font-mono);
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--sage);
+      height: 24px;
+      width: auto;
     }
     .footer-tagline {
       font-size: 13px;
@@ -855,7 +853,7 @@
   <!-- ═══════════ NAV ═══════════ -->
   <nav class="nav">
     <div class="nav-inner">
-      <a href="/" class="nav-logo">logd</a>
+      <a href="/" class="nav-logo"><img src="logo.svg" alt="logd"></a>
       <div class="nav-links">
         <a href="#features" class="nav-link">Features</a>
         <a href="https://github.com/tonytangdev/logd" class="nav-link nav-cta" target="_blank" rel="noopener">Get Started</a>
@@ -1038,7 +1036,7 @@
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <span class="footer-logo">logd</span>
+        <img src="logo-light.svg" alt="logd" class="footer-logo">
         <span class="footer-tagline">Local-first decision logging with semantic search. Built for developers who care where their data lives.</span>
       </div>
       <div class="footer-col">

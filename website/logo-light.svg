@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 44" fill="none">
+  <defs>
+    <linearGradient id="cardFrontL" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#6b8f71"/>
+      <stop offset="100%" stop-color="#4a6650"/>
+    </linearGradient>
+    <linearGradient id="cardMidL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7da882"/>
+      <stop offset="100%" stop-color="#6b8f71"/>
+    </linearGradient>
+    <linearGradient id="checkGradL" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d4f5c8"/>
+      <stop offset="100%" stop-color="#b5e6a3"/>
+    </linearGradient>
+    <filter id="checkGlowL" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Decision stack -->
+  <rect x="10" y="11" width="24" height="28" rx="4" fill="#a3b8a0" opacity="0.25"/>
+  <rect x="6" y="7" width="24" height="28" rx="4" fill="url(#cardMidL)" opacity="0.45"/>
+  <rect x="2" y="3" width="24" height="28" rx="4" fill="url(#cardFrontL)"/>
+  <rect x="2" y="3" width="24" height="14" rx="4" fill="#fff" opacity="0.1"/>
+
+  <!-- Checkmark -->
+  <path d="M9.5 16 L12.5 19.5 L20 12" stroke="url(#checkGradL)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" filter="url(#checkGlowL)"/>
+
+  <!-- Content lines -->
+  <rect x="9" y="23" width="13" height="1.5" rx="0.75" fill="#c0caf5" opacity="0.35"/>
+  <rect x="9" y="26.5" width="8" height="1.5" rx="0.75" fill="#c0caf5" opacity="0.2"/>
+
+  <!-- Wordmark -->
+  <text x="42" y="28" font-family="'JetBrains Mono','SF Mono','Fira Code',monospace" font-size="24" font-weight="700" fill="#e4dfd4" letter-spacing="-1">log<tspan fill="#9ece6a">d</tspan></text>
+</svg>
