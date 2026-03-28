@@ -13,6 +13,7 @@ import { registerEditCommand } from "./commands/edit.js";
 import { registerListCommand } from "./commands/list.js";
 import { registerProjectCommand } from "./commands/project.js";
 import { registerSearchCommand } from "./commands/search.js";
+import { registerServeCommand } from "./commands/serve.js";
 import { registerShowCommand } from "./commands/show.js";
 
 export function createCli(): Command {
@@ -39,6 +40,7 @@ export function createCli(): Command {
 	registerEditCommand(program, decisionService);
 	registerListCommand(program, decisionService);
 	registerDeleteCommand(program, decisionService);
+	registerServeCommand(program, decisionService, projectService);
 
 	return program;
 }
