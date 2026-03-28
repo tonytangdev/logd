@@ -12,6 +12,12 @@
 		}
 	},
 	"files": {
-		"includes": ["**", "!**/node_modules", "!**/dist", "!@website/index.html"]
+		"includes": [
+			"**",
+			"!**/node_modules",
+			"!**/dist",
+			"!website/index.html",
+			"!.claude"
+		]
 	}
 }
