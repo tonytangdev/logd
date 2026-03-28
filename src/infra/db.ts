@@ -13,6 +13,18 @@ export function createDatabase(dbPath: string): Database.Database {
 	db.pragma("journal_mode = WAL");
 	db.pragma("foreign_keys = ON");
 
+	// Migrate: recreate decisions_vec with cosine distance if it exists with L2 (default)
+	const vecSchema = db
+		.prepare(
+			"SELECT sql FROM sqlite_master WHERE type='table' AND name='decisions_vec'",
+		)
+		.get() as { sql: string } | undefined;
+	if (vecSchema && !vecSchema.sql.includes("distance_metric=cosine")) {
+		db.exec(`
+			DROP TABLE decisions_vec;
+		`);
+	}
+
 	db.exec(`
 		CREATE TABLE IF NOT EXISTS projects (
 			id TEXT PRIMARY KEY,
@@ -36,7 +48,7 @@ export function createDatabase(dbPath: string): Database.Database {
 
 		CREATE VIRTUAL TABLE IF NOT EXISTS decisions_vec USING vec0(
 			id TEXT PRIMARY KEY,
-			embedding float[1024]
+			embedding float[1024] distance_metric=cosine
 		);
 	`);
 
