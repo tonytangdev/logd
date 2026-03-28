@@ -1,6 +1,6 @@
-import { mkdtempSync, rmSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createDatabase } from "./db.js";
 
@@ -19,7 +19,7 @@ describe("createDatabase", () => {
 		const dbPath = join(tempDir, "nested", "deep", "logd.db");
 		const db = createDatabase(dbPath);
 		db.close();
-		expect(() => require("fs").statSync(dbPath)).not.toThrow();
+		expect(() => require("node:fs").statSync(dbPath)).not.toThrow();
 	});
 
 	it("creates projects table with correct columns", () => {
