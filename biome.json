@@ -12,6 +12,6 @@
 		}
 	},
 	"files": {
-		"includes": ["**", "!**/node_modules", "!**/dist"]
+		"includes": ["**", "!**/node_modules", "!**/dist", "!@website/index.html"]
 	}
 }
