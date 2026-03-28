@@ -8,6 +8,7 @@ import { DecisionRepo } from "../infra/decision.repo.js";
 import { OllamaClient } from "../infra/ollama.client.js";
 import { ProjectRepo } from "../infra/project.repo.js";
 import { registerAddCommand } from "./commands/add.js";
+import { registerDeleteCommand } from "./commands/delete.js";
 import { registerEditCommand } from "./commands/edit.js";
 import { registerListCommand } from "./commands/list.js";
 import { registerProjectCommand } from "./commands/project.js";
@@ -37,6 +38,7 @@ export function createCli(): Command {
 	registerShowCommand(program, decisionService);
 	registerEditCommand(program, decisionService);
 	registerListCommand(program, decisionService);
+	registerDeleteCommand(program, decisionService);
 
 	return program;
 }
