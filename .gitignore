@@ -2,3 +2,4 @@ node_modules
 dist
 *.db
 .mcp.json
+.vercel
