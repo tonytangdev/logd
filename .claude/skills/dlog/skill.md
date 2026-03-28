@@ -3,7 +3,6 @@
 Log and search decisions using the logd CLI. Use this skill PROACTIVELY whenever the user makes a decision (e.g., "let's use PostgreSQL", "I'll go with approach B", "we decided to split the service"), even if they don't explicitly ask to log it. Also use when the user asks about past decisions.
 
 TRIGGER when: the user makes or references a technical or process decision during conversation.
-DO NOT TRIGGER when: trivial code choices (variable names, formatting), temporary debugging, or unresolved questions.
 
 ## Decision Detection
 
@@ -27,7 +26,7 @@ The user can override detection at any time:
 
 - **"save this decision"** or **"log this"** — force save even if not auto-detected
 - **"don't log that"** or **"skip"** — dismiss a save prompt
-- **"save decisions automatically"** — switch to auto mode: save without asking (session-only, resets next conversation)
+- **"save decisions automatically"** — switch to auto mode: save without asking (lasts for current conversation only, resets to ask mode in new conversations)
 - **"ask me before saving"** — switch back to ask mode (default)
 
 ## Project Resolution
@@ -54,7 +53,9 @@ When a decision is detected (or user forces a save):
    - `-t` tags: inferred from topic (e.g. "database", "api", "deployment") (repeat flag per tag)
    - `-s` status: omit (defaults to "active") unless user specifies
    - `-l` links: include if relevant URLs were mentioned (repeat flag per link)
-4. **Run:** `logd add "<title>" -p <project> -c "<context>" -a "<alt1>" -a "<alt2>" -t "<tag1>"`
+4. **Run:** `logd add '<title>' -p <project> -c '<context>' -a '<alt1>' -a '<alt2>' -t '<tag1>'`
+   - Use single quotes around values to avoid shell metacharacter issues. Escape any single quotes inside values with `'\''`.
+   - Keep title under 80 chars, context under 300 chars. Distill verbose discussions into concise summaries.
 5. **Confirm** — parse output for the decision ID and tell the user
 
 ## Recall Flow
@@ -62,7 +63,7 @@ When a decision is detected (or user forces a save):
 When the user asks about past decisions ("what did we decide about...", "why did we pick...", "any past decisions on..."):
 
 1. **Resolve project** — same flow as save. If unresolvable, omit `-p` to search all projects
-2. **Run:** `logd search "<query>" -v` (add `-p <project>` if resolved). Use default limit (5) and threshold — do not add `-n` or `-t` flags unless the user asks.
+2. **Run:** `logd search "<query>" -v` (add `-p <project>` if resolved). Use default limit (5) and threshold — do not add `--limit` or `--threshold` flags unless the user asks.
 3. **Present results** — summarize each decision: title, context, alternatives, date (createdAt)
 4. **No results** — tell the user, suggest broadening the query or checking other projects
 
