@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>logd — Local-First Decision Logging</title>
+  <meta name="description" content="Log decisions from your AI agent. Semantic search finds the 'why' months later. Private, local, open source.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════
+       CSS VARIABLES
+       ═══════════════════════════════════════ */
+    :root {
+      --cream:       #f7f4ee;
+      --cream-deep:  #ede9e0;
+      --cream-dark:  #e4dfd4;
+      --ink:         #1a1a1a;
+      --ink-soft:    #4a4a46;
+      --ink-muted:   #8a8880;
+      --forest:      #2d3b2d;
+      --forest-mid:  #3d5240;
+      --forest-light:#4a6650;
+      --moss:        #6b8f71;
+      --sage:        #a3b8a0;
+      --terminal-bg: #1a1b26;
+      --terminal-fg: #c0caf5;
+      --t-green:     #9ece6a;
+      --t-blue:      #7aa2f7;
+      --t-yellow:    #e0af68;
+      --t-comment:   #565f89;
+      --t-muted:     #737aa2;
+
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body:    'DM Sans', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', 'SF Mono', monospace;
+
+      --space-xs: 8px;
+      --space-sm: 16px;
+      --space-md: 24px;
+      --space-lg: 48px;
+      --space-xl: 80px;
+      --space-2xl: 120px;
+
+      --max-w: 1160px;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    /* ═══════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      color: var(--ink);
+      background: var(--cream);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ═══════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    @keyframes subtlePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(61, 82, 64, 0.15); }
+      50% { box-shadow: 0 0 0 6px rgba(61, 82, 64, 0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ═══════════════════════════════════════
+       NAV
+       ═══════════════════════════════════════ */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(247, 244, 238, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 16px var(--space-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--forest);
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span {
+      color: var(--moss);
+    }
+    .nav-links {
+      display: flex; gap: var(--space-md); align-items: center;
+    }
+    .nav-link {
+      font-size: 14px; color: var(--ink-soft); font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--forest); }
+    .nav-cta {
+      font-size: 13px; font-weight: 600;
+      color: var(--cream);
+      background: var(--forest);
+      padding: 10px 22px;
+      border-radius: var(--radius-sm);
+      transition: background 0.25s, transform 0.2s;
+    }
+    .nav-cta:hover {
+      background: var(--forest-mid);
+      transform: translateY(-1px);
+    }
+
+    /* ═══════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════ */
+    .hero {
+      padding-top: calc(var(--space-2xl) + 40px);
+      padding-bottom: var(--space-xl);
+      position: relative;
+    }
+    /* Subtle radial glow behind hero */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 900px; height: 600px;
+      background: radial-gradient(ellipse at center, rgba(163,184,160,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--space-md);
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: var(--space-lg);
+      align-items: center;
+    }
+    .hero-left {
+      animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--forest-mid);
+      border: 1.5px solid var(--cream-dark);
+      padding: 7px 18px;
+      border-radius: 30px;
+      margin-bottom: var(--space-md);
+      background: rgba(255,255,255,0.5);
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--ink);
+      letter-spacing: -1px;
+      margin-bottom: var(--space-md);
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--forest-mid);
+    }
+    .hero-subtitle {
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--ink-muted);
+      max-width: 440px;
+      margin-bottom: 36px;
+    }
+
+    /* Install box */
+    .install-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--terminal-bg);
+      padding: 14px 20px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.03);
+      position: relative;
+      overflow: hidden;
+    }
+    .install-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,0.06);
+      pointer-events: none;
+    }
+    .install-dollar { color: var(--t-muted); }
+    .install-cmd { color: var(--terminal-fg); }
+    .copy-btn {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--t-muted);
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover {
+      background: rgba(255,255,255,0.12);
+      color: var(--terminal-fg);
+    }
+    .copy-btn.copied {
+      color: var(--t-green);
+      border-color: rgba(158, 206, 106, 0.3);
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--forest);
+      background: transparent;
+      border: 1.5px solid var(--forest);
+      padding: 12px 22px;
+      border-radius: var(--radius-sm);
+      transition: background 0.25s, color 0.2s, transform 0.2s;
+    }
+    .github-link:hover {
+      background: var(--forest);
+      color: var(--cream);
+      transform: translateY(-1px);
+    }
+    .github-link svg {
+      width: 18px; height: 18px;
+    }
+
+    /* Terminal */
+    .hero-right {
+      animation: slideInRight 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+    }
+    .terminal {
+      background: var(--terminal-bg);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow:
+        0 24px 80px rgba(0,0,0,0.15),
+        0 8px 24px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+      position: relative;
+    }
+    .terminal::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.06);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 14px 18px;
+      background: rgba(0,0,0,0.2);
+    }
+    .terminal-dot {
+      width: 11px; height: 11px; border-radius: 50%;
+    }
+    .dot-red    { background: #f7768e; }
+    .dot-yellow { background: #e0af68; }
+    .dot-green  { background: #9ece6a; }
+    .terminal-title {
+      flex: 1;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--t-comment);
+      margin-right: 40px;
+    }
+    .terminal-body {
+      padding: 24px 24px 20px;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      line-height: 1.8;
+      color: var(--terminal-fg);
+      position: relative;
+      min-height: 220px;
+    }
+    .t-comment { color: var(--t-comment); }
+    .t-prompt  { color: var(--t-green); }
+    .t-flag    { color: var(--t-blue); }
+    .t-string  { color: var(--t-yellow); }
+    .t-output  { color: var(--t-muted); }
+    .t-result  { color: var(--t-green); }
+    .t-sep     { color: #3b3f5c; }
+    .cursor-blink {
+      display: inline-block;
+      width: 8px; height: 17px;
+      background: var(--t-green);
+      animation: blink 1.1s step-end infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+
+    /* Scene system */
+    .scenes-container {
+      position: relative;
+      min-height: 200px;
+    }
+    .terminal-scene {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      pointer-events: none;
+    }
+    .terminal-scene.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+      position: relative;
+    }
+    .terminal-scene .scene-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--t-muted);
+      margin-bottom: 16px;
+      display: block;
+    }
+    .terminal-scene pre {
+      margin: 0;
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Scene nav */
+    .terminal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px 18px;
+    }
+    .scene-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      padding: 0;
+    }
+    .scene-dot.active {
+      background: var(--t-green);
+      box-shadow: 0 0 8px rgba(158, 206, 106, 0.4);
+      width: 24px;
+      border-radius: 4px;
+    }
+    .scene-dot:hover:not(.active) {
+      background: rgba(255,255,255,0.25);
+    }
+    .scene-labels {
+      display: flex;
+      gap: 0;
+      padding: 0 24px 6px;
+    }
+    .scene-label-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--t-comment);
+      cursor: pointer;
+      padding: 8px 4px;
+      text-align: center;
+      transition: color 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .scene-label-btn.active {
+      color: var(--t-green);
+    }
+    .scene-label-btn:hover:not(.active) {
+      color: var(--terminal-fg);
+    }
+
+    /* ═══════════════════════════════════════
+       FEATURES
+       ═══════════════════════════════════════ */
+    .features {
+      background: var(--cream-deep);
+      padding: var(--space-2xl) 0;
+      position: relative;
+    }
+    .features::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cream-dark), transparent);
+    }
+    .features-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--space-md);
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+    .section-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 4vw, 44px);
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+    .section-header p {
+      font-size: 17px;
+      color: var(--ink-muted);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Steps — horizontal journey */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin-bottom: 72px;
+      position: relative;
+    }
+    /* Connector line */
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: calc(16.66% + 20px);
+      right: calc(16.66% + 20px);
+      height: 2px;
+      background: linear-gradient(90deg, var(--forest), var(--moss), var(--forest));
+      opacity: 0.2;
+    }
+    .step {
+      text-align: center;
+      padding: 0 var(--space-md);
+      position: relative;
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--forest);
+      color: var(--cream);
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 4px 16px rgba(45, 59, 45, 0.2);
+    }
+    .step h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+    .step p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--ink-muted);
+      max-width: 260px;
+      margin: 0 auto;
+    }
+    .step code {
+      display: block;
+      margin: 8px auto 0;
+      max-width: fit-content;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--terminal-bg);
+      color: var(--terminal-fg);
+      padding: 8px 16px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .step code + code {
+      margin-top: 6px;
+    }
+
+    /* Feature cards — bento grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto auto;
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--cream);
+      border: 1.5px solid rgba(0,0,0,0.04);
+      border-radius: 16px;
+      padding: 36px;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                  border-color 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 0;
+      background: var(--forest);
+      border-radius: 0 0 4px 0;
+      transition: height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+      border-color: rgba(45, 59, 45, 0.1);
+    }
+    .feature-card:hover::after { height: 100%; }
+    .card-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, rgba(45,59,45,0.08), rgba(107,143,113,0.08));
+      transition: transform 0.3s;
+    }
+    .feature-card:hover .card-icon {
+      transform: scale(1.08);
+    }
+    .feature-card h3 {
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--ink);
+    }
+    .feature-card p {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink-muted);
+    }
+    /* Highlight card */
+    .feature-card.highlight {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0 28px;
+      align-items: start;
+      background: linear-gradient(135deg, var(--cream), rgba(163,184,160,0.08));
+    }
+    .feature-card.highlight .card-icon {
+      grid-row: 1 / 3;
+      width: 60px; height: 60px;
+    }
+    .feature-card.highlight h3 { font-size: 23px; }
+    .mcp-clients {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .mcp-chip {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: rgba(45, 59, 45, 0.06);
+      color: var(--ink-soft);
+      letter-spacing: 0.3px;
+    }
+
+    /* ═══════════════════════════════════════
+       CTA
+       ═══════════════════════════════════════ */
+    .cta {
+      background: var(--forest);
+      padding: var(--space-2xl) 0 var(--space-xl);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Layered ambient glows */
+    .cta::before {
+      content: '';
+      position: absolute;
+      top: -150px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 500px;
+      background: radial-gradient(ellipse at center, rgba(107,143,113,0.2) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cta::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; right: -100px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(163,184,160,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--space-md);
+      text-align: center;
+      position: relative;
+    }
+    .cta h2 {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4.5vw, 52px);
+      font-weight: 800;
+      color: var(--cream);
+      margin-bottom: 16px;
+      letter-spacing: -1px;
+    }
+    .cta h2 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--sage);
+    }
+    .cta-subtitle {
+      font-size: 18px;
+      color: var(--sage);
+      margin-bottom: 44px;
+      line-height: 1.6;
+    }
+    .cta-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .cta .install-box {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .cta-github {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border: 1.5px solid rgba(163,184,160,0.3);
+      border-radius: var(--radius-sm);
+      color: var(--cream);
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      background: rgba(255,255,255,0.04);
+    }
+    .cta-github:hover {
+      border-color: rgba(163,184,160,0.6);
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .cta-github svg { width: 20px; height: 20px; }
+
+    /* ═══════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════ */
+    .footer {
+      background: #1e2a1e;
+      padding: var(--space-lg) var(--space-md) var(--space-md);
+      position: relative;
+    }
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(163,184,160,0.15), transparent);
+    }
+    .footer-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .footer-logo {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--sage);
+    }
+    .footer-tagline {
+      font-size: 13px;
+      color: rgba(163,184,160,0.35);
+      line-height: 1.5;
+      max-width: 280px;
+    }
+    .footer-col h4 {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(163,184,160,0.5);
+      margin-bottom: 14px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 14px;
+      color: rgba(163,184,160,0.6);
+      margin-bottom: 10px;
+      transition: color 0.2s;
+    }
+    .footer-col a:hover {
+      color: var(--cream);
+    }
+    .footer-bottom {
+      max-width: var(--max-w);
+      margin: var(--space-md) auto 0;
+      padding-top: var(--space-sm);
+      border-top: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(163,184,160,0.25);
+      font-size: 12px;
+    }
+    @media (max-width: 600px) {
+      .footer-inner {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+      }
+    }
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+      }
+      .hero-right {
+        animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+      }
+      .steps {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      .step:not(:last-child)::after { display: none; }
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .feature-card.highlight {
+        grid-column: 1;
+        grid-template-columns: 1fr;
+      }
+      .feature-card.highlight .card-icon {
+        grid-row: auto;
+      }
+    }
+    @media (max-width: 600px) {
+      .nav-link:not(.nav-cta) { display: none; }
+      .hero { padding-top: calc(var(--space-xl) + 30px); }
+      .install-box { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════ NAV ═══════════ -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">logd</a>
+      <div class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="https://github.com/tonytangdev/logd" class="nav-link nav-cta" target="_blank" rel="noopener">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="badge">Local-First Decision Logging</div>
+        <h1>Your decisions.<br>Your machine.<br><em>Always searchable.</em></h1>
+        <p class="hero-subtitle">Your agent captures decisions with full context. Everything stays local. Semantic search finds the "why" months later — no cloud needed.</p>
+        <div class="hero-actions">
+          <div class="install-box">
+            <span class="install-dollar">$</span>
+            <span class="install-cmd">npm i -g @tonytangdev/logd</span>
+            <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+          </div>
+          <a href="https://github.com/tonytangdev/logd" class="github-link" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            View on GitHub
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <div class="terminal-title">terminal</div>
+          </div>
+          <div class="scene-labels">
+            <button class="scene-label-btn active" onclick="goToScene(0)">1. Decide</button>
+            <button class="scene-label-btn" onclick="goToScene(1)">2. Log</button>
+            <button class="scene-label-btn" onclick="goToScene(2)">3. Search</button>
+          </div>
+          <div class="terminal-body" id="terminal-body">
+            <div class="scenes-container">
+
+              <!-- Scene 1: Decide -->
+              <div class="terminal-scene active" data-scene="0">
+                <pre><span class="t-comment"># You mention a decision to your agent</span>
+
+<span class="t-prompt">&gt;</span> Use SQLite instead of Postgres for this project.
+<span class="t-prompt">&gt;</span> We need zero-config deployment and a
+<span class="t-prompt">&gt;</span> single-file database for the CLI tool.<span class="cursor-blink"></span></pre>
+              </div>
+
+              <!-- Scene 2: Log -->
+              <div class="terminal-scene" data-scene="1">
+                <pre><span class="t-comment"># Your agent enriches and logs it via MCP</span>
+
+<span class="t-prompt">$</span> logd add <span class="t-string">"Use SQLite over Postgres"</span> \
+    <span class="t-flag">-p</span> backend \
+    <span class="t-flag">-c</span> <span class="t-string">"Zero-config deploy, single-file DB"</span> \
+    <span class="t-flag">-a</span> <span class="t-string">"Postgres"</span> <span class="t-flag">-a</span> <span class="t-string">"MySQL"</span> \
+    <span class="t-flag">-t</span> database <span class="t-flag">-t</span> infrastructure
+
+<span class="t-output">Added decision: Use SQLite over Postgres (a1b2c3...)</span></pre>
+              </div>
+
+              <!-- Scene 3: Search -->
+              <div class="terminal-scene" data-scene="2">
+                <pre><span class="t-comment"># Months later, search by meaning</span>
+
+<span class="t-prompt">$</span> logd search <span class="t-string">"why not a hosted database?"</span>
+
+<span class="t-result">Use SQLite over Postgres</span> <span class="t-sep">|</span> <span class="t-output">backend</span> <span class="t-sep">|</span> <span class="t-string">0.89</span> <span class="t-sep">|</span> <span class="t-output">a1b2c3...</span></pre>
+              </div>
+
+            </div>
+          </div>
+          <div class="terminal-nav">
+            <button class="scene-dot active" onclick="goToScene(0)"></button>
+            <button class="scene-dot" onclick="goToScene(1)"></button>
+            <button class="scene-dot" onclick="goToScene(2)"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FEATURES ═══════════ -->
+  <section class="features" id="features">
+    <div class="features-inner">
+      <div class="section-header reveal">
+        <h2>Up and running in minutes</h2>
+        <p>logd needs Ollama for local embeddings and an MCP server to connect your agent. Here's the full setup.</p>
+      </div>
+
+      <!-- How It Works -->
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">1</div>
+          <h3>Install</h3>
+          <p>Install logd and pull the embedding model into Ollama.</p>
+          <code>npm i -g @tonytangdev/logd</code>
+          <code>ollama pull qwen3-embedding:0.6b</code>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">2</div>
+          <h3>Connect</h3>
+          <p>Start the MCP server so your agent can talk to logd.</p>
+          <code>logd serve</code>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">3</div>
+          <h3>Decide & Recall</h3>
+          <p>Mention decisions to your agent. Search the "why" months later.</p>
+        </div>
+      </div>
+
+      <!-- Feature Cards -->
+      <div class="cards-grid">
+        <div class="feature-card reveal">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3d5240" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93V12h2.75a2.5 2.5 0 0 1 2.5 2.5V16a4 4 0 1 1-2 0v-1.5a.5.5 0 0 0-.5-.5h-8.5a.5.5 0 0 0-.5.5V16a4 4 0 1 1-2 0v-1.5A2.5 2.5 0 0 1 7 12h2.75V9.93A4.001 4.001 0 0 1 12 2z"/></svg>
+          </div>
+          <h3>Your agent does the work</h3>
+          <p>Say "use SQLite" and your agent fills in the context, alternatives, tags, and reasoning. You decide. It documents.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3d5240" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+          <h3>Search by meaning</h3>
+          <p>Not keyword matching. Ollama embeds every decision locally, so "why not a hosted DB?" finds "Use SQLite over Postgres."</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3d5240" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+          </div>
+          <h3>Never leaves your machine</h3>
+          <p>SQLite database, local embeddings, no cloud sync. Your architectural decisions stay on your disk, period.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3d5240" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 15h0M2 9.5h20"/></svg>
+          </div>
+          <h3>Any agent. One protocol.</h3>
+          <p>logd speaks MCP. Plug it into whatever agent you already use.</p>
+          <div class="mcp-clients">
+            <span class="mcp-chip">Claude Code</span>
+            <span class="mcp-chip">Claude Desktop</span>
+            <span class="mcp-chip">OpenCode</span>
+            <span class="mcp-chip">Codex</span>
+            <span class="mcp-chip">+ any MCP client</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ CTA ═══════════ -->
+  <section class="cta">
+    <div class="cta-inner">
+      <div class="reveal">
+        <h2>Stop losing the <em>"why"</em></h2>
+        <p class="cta-subtitle">Free, open source, and yours to keep.</p>
+        <div class="cta-actions">
+          <div class="install-box">
+            <span class="install-dollar">$</span>
+            <span class="install-cmd">npm i -g @tonytangdev/logd</span>
+            <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+          </div>
+          <a href="https://github.com/tonytangdev/logd" class="cta-github" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            Star on GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo">logd</span>
+        <span class="footer-tagline">Local-first decision logging with semantic search. Built for developers who care where their data lives.</span>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <a href="https://github.com/tonytangdev/logd" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/tonytangdev/logd#readme" target="_blank" rel="noopener">Documentation</a>
+        <a href="https://github.com/tonytangdev/logd/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="https://www.npmjs.com/package/@tonytangdev/logd" target="_blank" rel="noopener">npm</a>
+        <a href="https://ollama.com/" target="_blank" rel="noopener">Ollama</a>
+        <a href="https://modelcontextprotocol.io/" target="_blank" rel="noopener">MCP Protocol</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2025 Tony Tang</span>
+      <span>Made with care for the developer community</span>
+    </div>
+  </footer>
+
+  <!-- ═══════════ SCRIPTS ═══════════ -->
+  <script>
+    // Copy install command
+    function copyInstall(btn) {
+      navigator.clipboard.writeText('npm i -g @tonytangdev/logd');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          // Stagger siblings
+          const parent = entry.target.parentElement;
+          const siblings = [...parent.querySelectorAll('.reveal')];
+          const idx = siblings.indexOf(entry.target);
+          entry.target.style.transitionDelay = `${idx * 0.1}s`;
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Terminal scene carousel
+    let currentScene = 0;
+    let autoplayTimer = null;
+    const scenes = document.querySelectorAll('.terminal-scene');
+    const dots = document.querySelectorAll('.scene-dot');
+    const labels = document.querySelectorAll('.scene-label-btn');
+
+    function goToScene(idx) {
+      if (idx === currentScene) return;
+      scenes[currentScene].classList.remove('active');
+      dots[currentScene].classList.remove('active');
+      labels[currentScene].classList.remove('active');
+
+      currentScene = idx;
+      scenes[currentScene].classList.add('active');
+      dots[currentScene].classList.add('active');
+      labels[currentScene].classList.add('active');
+
+      // Reset autoplay on manual interaction
+      resetAutoplay();
+    }
+
+    function nextScene() {
+      goToScene((currentScene + 1) % scenes.length);
+    }
+
+    function resetAutoplay() {
+      clearInterval(autoplayTimer);
+      autoplayTimer = setInterval(nextScene, 4000);
+    }
+
+    // Start autoplay
+    document.fonts.ready.then(() => {
+      autoplayTimer = setInterval(nextScene, 4000);
+    });
+  </script>
+</body>
+</html>
