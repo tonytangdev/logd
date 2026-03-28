@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/tonytangdev/logd/compare/v1.0.1...v1.0.2) (2026-03-28)
+
+
+### Bug Fixes
+
+* test automated publish ([0ba8dba](https://github.com/tonytangdev/logd/commit/0ba8dba21a189f751194c13330e5b7ce95f8f6d4))
+
 ## [1.0.1](https://github.com/tonytangdev/logd/compare/v1.0.0...v1.0.1) (2026-03-28)
 
 
