@@ -3,3 +3,4 @@ dist
 *.db
 .mcp.json
 .vercel
+.DS_Store
