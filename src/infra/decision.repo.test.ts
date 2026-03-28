@@ -1,7 +1,7 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type Database from "better-sqlite3";
-import { mkdtempSync, rmSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Decision } from "../core/types.js";
 import { createDatabase } from "./db.js";
@@ -61,10 +61,10 @@ describe("DecisionRepo", () => {
 
 		const found = repo.findById("dec-1");
 		expect(found).not.toBeNull();
-		expect(found!.id).toBe("dec-1");
-		expect(found!.title).toBe("Use Postgres");
-		expect(found!.project).toBe("testproject");
-		expect(found!.status).toBe("active");
+		expect(found?.id).toBe("dec-1");
+		expect(found?.title).toBe("Use Postgres");
+		expect(found?.project).toBe("testproject");
+		expect(found?.status).toBe("active");
 	});
 
 	it("findById parses JSON array fields", () => {
@@ -76,9 +76,9 @@ describe("DecisionRepo", () => {
 		repo.create(decision, fakeEmbedding(1));
 
 		const found = repo.findById("dec-1");
-		expect(found!.alternatives).toEqual(["MySQL", "MongoDB"]);
-		expect(found!.tags).toEqual(["backend", "db"]);
-		expect(found!.links).toEqual(["https://example.com"]);
+		expect(found?.alternatives).toEqual(["MySQL", "MongoDB"]);
+		expect(found?.tags).toEqual(["backend", "db"]);
+		expect(found?.links).toEqual(["https://example.com"]);
 	});
 
 	it("findById returns null for non-existent decision", () => {
@@ -90,8 +90,8 @@ describe("DecisionRepo", () => {
 		repo.update("dec-1", { context: "Updated context" });
 
 		const found = repo.findById("dec-1");
-		expect(found!.context).toBe("Updated context");
-		expect(found!.title).toBe("Use Postgres"); // unchanged
+		expect(found?.context).toBe("Updated context");
+		expect(found?.title).toBe("Use Postgres"); // unchanged
 	});
 
 	it("update with new embedding replaces the vector", () => {
@@ -99,7 +99,7 @@ describe("DecisionRepo", () => {
 		repo.update("dec-1", { title: "Use MySQL" }, fakeEmbedding(2));
 
 		const found = repo.findById("dec-1");
-		expect(found!.title).toBe("Use MySQL");
+		expect(found?.title).toBe("Use MySQL");
 	});
 
 	it("update replaces JSON arrays entirely", () => {
@@ -107,7 +107,7 @@ describe("DecisionRepo", () => {
 		repo.update("dec-1", { tags: ["new-tag-1", "new-tag-2"] });
 
 		const found = repo.findById("dec-1");
-		expect(found!.tags).toEqual(["new-tag-1", "new-tag-2"]);
+		expect(found?.tags).toEqual(["new-tag-1", "new-tag-2"]);
 	});
 
 	it("delete removes from both decisions and decisions_vec", () => {

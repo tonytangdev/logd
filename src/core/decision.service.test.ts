@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DecisionService } from "./decision.service.js";
 import { EmbeddingService } from "./embedding.service.js";
 import type {
-	IDecisionRepo,
-	IProjectRepo,
-	IEmbeddingClient,
 	Decision,
+	IDecisionRepo,
+	IEmbeddingClient,
+	IProjectRepo,
 	Project,
 } from "./types.js";
 
