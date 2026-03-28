@@ -9,6 +9,7 @@ import { OllamaClient } from "../infra/ollama.client.js";
 import { ProjectRepo } from "../infra/project.repo.js";
 import { registerAddCommand } from "./commands/add.js";
 import { registerProjectCommand } from "./commands/project.js";
+import { registerSearchCommand } from "./commands/search.js";
 
 export function createCli(): Command {
 	const config = resolveConfig();
@@ -29,6 +30,7 @@ export function createCli(): Command {
 
 	registerProjectCommand(program, projectService);
 	registerAddCommand(program, decisionService);
+	registerSearchCommand(program, decisionService);
 
 	return program;
 }
