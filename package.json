@@ -1,11 +1,14 @@
 {
 	"name": "logd",
 	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
-	"directories": {
-		"doc": "docs"
-	},
+	"description": "CLI tool & MCP server for logging and semantically searching decisions using local LLM embeddings",
+	"main": "dist/src/cli/index.js",
+	"files": [
+		"dist/bin/",
+		"dist/src/",
+		"README.md",
+		"LICENSE"
+	],
 	"scripts": {
 		"format": "biome format --write .",
 		"format:check": "biome check .",
@@ -20,9 +23,17 @@
 		"type": "git",
 		"url": "git+https://github.com/tonytangdev/logd.git"
 	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"keywords": [
+		"cli",
+		"decisions",
+		"embeddings",
+		"sqlite",
+		"mcp",
+		"ollama",
+		"semantic-search"
+	],
+	"author": "Tony Tang",
+	"license": "MIT",
 	"type": "commonjs",
 	"bugs": {
 		"url": "https://github.com/tonytangdev/logd/issues"
