@@ -47,7 +47,8 @@ describe("CLI show command", { timeout: 30_000 }, () => {
 		try {
 			run("show nonexistent-uuid");
 			expect.fail("should have thrown");
-		} catch (e: any) {
+		} catch (err) {
+			const e = err as { stderr: string };
 			expect(e.stderr).toContain(
 				"Error: Decision 'nonexistent-uuid' not found",
 			);

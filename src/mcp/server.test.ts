@@ -3,6 +3,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DecisionService } from "../core/decision.service.js";
 import type { ProjectService } from "../core/project.service.js";
+import type { Decision, SearchResult } from "../core/types.js";
 import { createMcpServer } from "./server.js";
 
 function mockDecisionService() {
@@ -130,7 +131,7 @@ describe("MCP server", () => {
 					decision: { id: "d1", title: "Use Postgres" },
 					score: 0.9,
 				},
-			] as any;
+			] as unknown as SearchResult[];
 			vi.mocked(decisionService.search).mockResolvedValue(results);
 			const result = await client.callTool({
 				name: "logd_search_decisions",
@@ -146,7 +147,9 @@ describe("MCP server", () => {
 
 		it("logd_show_decision delegates to DecisionService.getById", async () => {
 			const decision = { id: "uuid", title: "Use Postgres" };
-			vi.mocked(decisionService.getById).mockReturnValue(decision as any);
+			vi.mocked(decisionService.getById).mockReturnValue(
+				decision as unknown as Decision,
+			);
 			const result = await client.callTool({
 				name: "logd_show_decision",
 				arguments: { id: "uuid" },
@@ -163,7 +166,9 @@ describe("MCP server", () => {
 				title: "Use Postgres",
 				status: "superseded",
 			};
-			vi.mocked(decisionService.update).mockResolvedValue(decision as any);
+			vi.mocked(decisionService.update).mockResolvedValue(
+				decision as unknown as Decision,
+			);
 			const result = await client.callTool({
 				name: "logd_edit_decision",
 				arguments: { id: "uuid", status: "superseded" },
@@ -189,7 +194,9 @@ describe("MCP server", () => {
 
 		it("logd_list_decisions delegates to DecisionService.list", async () => {
 			const decisions = [{ id: "d1", title: "Use Postgres" }];
-			vi.mocked(decisionService.list).mockReturnValue(decisions as any);
+			vi.mocked(decisionService.list).mockReturnValue(
+				decisions as unknown as Decision[],
+			);
 			const result = await client.callTool({
 				name: "logd_list_decisions",
 				arguments: { project: "test", status: "active" },

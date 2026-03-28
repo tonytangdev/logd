@@ -41,7 +41,8 @@ describe("CLI project commands", () => {
 		try {
 			run('project create "dup"');
 			expect.fail("should have thrown");
-		} catch (e: any) {
+		} catch (err) {
+			const e = err as { stderr: string };
 			expect(e.stderr).toContain("Error: Project 'dup' already exists");
 			expect(e.stderr).not.toContain("at ");
 		}

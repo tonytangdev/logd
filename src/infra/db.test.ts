@@ -24,8 +24,8 @@ describe("createDatabase", () => {
 
 	it("creates projects table with correct columns", () => {
 		const db = createDatabase(join(tempDir, "test.db"));
-		const columns = db.pragma("table_info(projects)") as any[];
-		const names = columns.map((c: any) => c.name);
+		const columns = db.pragma("table_info(projects)") as { name: string }[];
+		const names = columns.map((c: { name: string }) => c.name);
 		expect(names).toContain("id");
 		expect(names).toContain("name");
 		expect(names).toContain("description");
@@ -35,8 +35,8 @@ describe("createDatabase", () => {
 
 	it("creates decisions table with correct columns", () => {
 		const db = createDatabase(join(tempDir, "test.db"));
-		const columns = db.pragma("table_info(decisions)") as any[];
-		const names = columns.map((c: any) => c.name);
+		const columns = db.pragma("table_info(decisions)") as { name: string }[];
+		const names = columns.map((c: { name: string }) => c.name);
 		expect(names).toEqual(
 			expect.arrayContaining([
 				"id",
@@ -78,14 +78,14 @@ describe("createDatabase", () => {
 
 	it("enforces foreign keys", () => {
 		const db = createDatabase(join(tempDir, "test.db"));
-		const fk = db.pragma("foreign_keys") as any[];
+		const fk = db.pragma("foreign_keys") as { foreign_keys: number }[];
 		expect(fk[0].foreign_keys).toBe(1);
 		db.close();
 	});
 
 	it("uses WAL journal mode", () => {
 		const db = createDatabase(join(tempDir, "test.db"));
-		const mode = db.pragma("journal_mode") as any[];
+		const mode = db.pragma("journal_mode") as { journal_mode: string }[];
 		expect(mode[0].journal_mode).toBe("wal");
 		db.close();
 	});

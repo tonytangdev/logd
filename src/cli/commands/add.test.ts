@@ -52,7 +52,8 @@ describe("CLI add command", { timeout: 30_000 }, () => {
 		try {
 			run('add "Test"');
 			expect.fail("should have thrown");
-		} catch (e: any) {
+		} catch (err) {
+			const e = err as { stderr: string };
 			expect(e.stderr).toContain("required option");
 			expect(e.stderr).not.toContain("at ");
 		}
@@ -62,7 +63,8 @@ describe("CLI add command", { timeout: 30_000 }, () => {
 		try {
 			run('add "Test" -p nonexistent');
 			expect.fail("should have thrown");
-		} catch (e: any) {
+		} catch (err) {
+			const e = err as { stderr: string };
 			expect(e.stderr).toContain("Error: Project 'nonexistent' not found");
 			expect(e.stderr).not.toContain("at ");
 		}
