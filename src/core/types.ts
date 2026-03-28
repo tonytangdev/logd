@@ -76,7 +76,8 @@ export interface IDecisionRepo {
 	}): Decision[];
 	searchByVector(
 		embedding: number[],
-		options?: { project?: string; limit?: number },
+		limit: number,
+		project?: string,
 	): SearchResult[];
 }
 

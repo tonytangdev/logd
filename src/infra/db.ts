@@ -1,6 +1,6 @@
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import Database from "better-sqlite3";
-import { mkdirSync } from "fs";
-import { dirname } from "path";
 import * as sqliteVec from "sqlite-vec";
 
 export function createDatabase(dbPath: string): Database.Database {
@@ -23,7 +23,7 @@ export function createDatabase(dbPath: string): Database.Database {
 
 		CREATE TABLE IF NOT EXISTS decisions (
 			id TEXT PRIMARY KEY,
-			project TEXT NOT NULL REFERENCES projects(id),
+			project TEXT NOT NULL REFERENCES projects(name),
 			title TEXT NOT NULL,
 			context TEXT,
 			alternatives TEXT,
