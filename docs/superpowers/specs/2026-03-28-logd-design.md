@@ -21,7 +21,9 @@ A CLI tool (`logd`) that stores decisions in a local SQLite database with vector
 | `description` | TEXT | no | Helps AI agents pick the right project |
 | `created_at` | TEXT (ISO 8601) | yes | Auto |
 
-Projects are an explicit registry. Decisions reference a project by name. If the project doesn't exist, the command fails and lists available projects. This prevents project name drift when AI agents create decisions.
+Projects are an explicit registry. Decisions reference a project by name (FK to `projects.name` with UNIQUE constraint). If the project doesn't exist, the command fails and lists available projects. This prevents project name drift when AI agents create decisions.
+
+Project renaming is not supported in v1. To "rename", create a new project and migrate decisions manually.
 
 ### Decisions table
 
@@ -35,13 +37,26 @@ Projects are an explicit registry. Decisions reference a project by name. If the
 | `tags` | TEXT (JSON array) | no | e.g., `["backend", "database"]` |
 | `status` | TEXT | yes | Default `active`. Enum: `active`, `superseded`, `deprecated` |
 | `links` | TEXT (JSON array) | no | URLs or `decision:<uuid>` references |
-| `embedding` | FLOAT32 vector | yes | Computed from structured template |
+| `embedding` | — | yes | Stored in separate `vec0` virtual table (see Storage section) |
 | `created_at` | TEXT (ISO 8601) | yes | Auto |
 | `updated_at` | TEXT (ISO 8601) | yes | Auto |
 
 All optional fields are typically filled by an LLM agent based on the title or a prompt. JSON arrays avoid join tables.
 
-Decisions are mutable: editable and deletable. Edits re-compute the embedding.
+Decisions are mutable: editable and deletable. Edits re-compute the embedding. Links stored as `decision:<uuid>` are opaque strings — no validation or resolution, just stored for reference.
+
+### Embedding storage
+
+`sqlite-vec` uses virtual tables, not regular columns. The embedding is stored in a separate `decisions_vec` virtual table:
+
+```sql
+CREATE VIRTUAL TABLE decisions_vec USING vec0(
+  id TEXT PRIMARY KEY,
+  embedding float[1024]
+);
+```
+
+Qwen3-Embedding-0.6B outputs **1024-dimensional** vectors. The `decisions_vec` table is joined with `decisions` by `id` during search queries.
 
 ## Embedding Strategy
 
@@ -96,21 +111,40 @@ logd add <title> [options]          -- create a decision
 logd search <query> [options]       -- semantic search
   --project, -p <name>              -- filter by project (searches all if omitted)
   --limit, -n <number>              -- default: 5
-  --threshold <0-1>                 -- minimum similarity score
+  --threshold <0-1>                 -- minimum similarity score (no default, returns all top-K if omitted)
   --verbose, -v                     -- full detail output
 
-logd edit <id> [options]            -- update decision (same flags as add)
-logd delete <id>                    -- delete a decision
+logd show <id>                      -- show a single decision by ID (full detail)
 
-logd list [options]                 -- list decisions
+logd edit <id> [options]            -- partial update, only provided fields are changed
+  --project, -p <name>              -- move to different project
+  --title <text>                    -- update title
+  --context, -c <text>              -- update context
+  --alternatives, -a <text...>      -- replaces entire array
+  --tags, -t <text...>              -- replaces entire array
+  --status, -s <status>             -- update status
+  --links, -l <text...>             -- replaces entire array
+
+logd delete <id>                    -- delete immediately, no confirmation prompt
+
+logd list [options]                 -- list decisions, ordered by created_at desc
   --project, -p <name>              -- filter by project
   --status, -s <status>             -- filter by status
+  --limit, -n <number>              -- default: 20
 
 logd project create <name> [--description, -d <text>]
 logd project list
 
 logd serve                          -- start MCP server (stdio)
 ```
+
+## CLI Output Format
+
+- **Default**: compact plain text (title, project, status, ID)
+- **`--verbose`**: full detail (all fields)
+- **`search`**: shows title, project, similarity score; `--verbose` for all fields
+- **`show`**: always full detail
+- **MCP tools**: JSON objects/arrays
 
 ## MCP Server
 
@@ -122,13 +156,16 @@ Started via `logd serve`. Uses stdio transport.
 |---|---|
 | `logd_add_decision` | Create a decision (same params as CLI add) |
 | `logd_search_decisions` | Semantic search (query, project?, limit?, threshold?) |
-| `logd_edit_decision` | Update a decision by ID |
+| `logd_show_decision` | Get a single decision by ID |
+| `logd_edit_decision` | Update a decision by ID (partial update) |
 | `logd_delete_decision` | Delete a decision by ID |
 | `logd_list_decisions` | List decisions (project?, status?) |
 | `logd_create_project` | Create a project |
 | `logd_list_projects` | List available projects |
 
 MCP tools call the same core functions as CLI commands. No duplicated logic.
+
+MCP tool input schemas mirror CLI flags as JSON properties. Output is JSON objects/arrays matching the core types (Decision, Project). Schemas are defined in code via the MCP SDK's `inputSchema` property.
 
 ## Architecture
 
@@ -140,6 +177,7 @@ src/
     commands/
       add.ts
       search.ts
+      show.ts
       edit.ts
       delete.ts
       list.ts
