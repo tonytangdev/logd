@@ -1,4 +1,4 @@
-# dlog — Decision Logger
+# logd — Decision Logger
 
 Log and search decisions using the logd CLI. Use this skill PROACTIVELY whenever the user makes a decision (e.g., "let's use PostgreSQL", "I'll go with approach B", "we decided to split the service"), even if they don't explicitly ask to log it. Also use when the user asks about past decisions.
 
