@@ -33,7 +33,7 @@
 		"semantic-search"
 	],
 	"author": "Tony Tang",
-	"license": "MIT",
+	"license": "MIT WITH Commons-Clause",
 	"type": "commonjs",
 	"bugs": {
 		"url": "https://github.com/tonytangdev/logd/issues"
