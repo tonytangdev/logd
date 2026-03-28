@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/tonytangdev/logd/compare/v1.0.0...v1.0.1) (2026-03-28)
+
+
+### Bug Fixes
+
+* scope package name to @tonytangdev/logd ([39fea95](https://github.com/tonytangdev/logd/commit/39fea9558fc79aebe3a9cfba0a168d395c54b014))
+
 ## 1.0.0 (2026-03-28)
 
 
