@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/tonytangdev/logd/compare/v1.0.3...v1.1.0) (2026-03-28)
+
+
+### Features
+
+* add SVG logo and favicon to website ([3e44592](https://github.com/tonytangdev/logd/commit/3e4459253444f5629dea402a9ed1a90dba443458))
+
 ## [1.0.3](https://github.com/tonytangdev/logd/compare/v1.0.2...v1.0.3) (2026-03-28)
 
 
