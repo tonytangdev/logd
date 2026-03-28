@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#2d3b2d"/>
+  <rect x="60" y="60" width="1080" height="510" rx="24" fill="#1a1b26" opacity="0.3"/>
+  <text x="600" y="260" text-anchor="middle" font-family="Georgia, serif" font-size="72" font-weight="800" fill="#f7f4ee">logd</text>
+  <text x="600" y="340" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="#a3b8a0">Local-First Decision Logging for AI Agents</text>
+  <text x="600" y="400" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" fill="#6b8f71">Your decisions. Your machine. Always searchable.</text>
+  <rect x="440" y="450" width="320" height="48" rx="8" fill="#1a1b26"/>
+  <text x="600" y="482" text-anchor="middle" font-family="monospace" font-size="16" fill="#9ece6a">$ npm i -g @tonytangdev/logd</text>
+</svg>
