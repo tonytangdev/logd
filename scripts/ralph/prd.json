@@ -1,0 +1,367 @@
+{
+  "project": "logd",
+  "branchName": "ralph/logd-implementation",
+  "description": "CLI tool & MCP server for logging and semantically searching decisions using Ollama embeddings and SQLite",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Project scaffolding",
+      "description": "As a developer, I need a TypeScript project with all deps, Biome, and directory structure so I can start building.",
+      "acceptanceCriteria": [
+        "package.json exists with commander, better-sqlite3, sqlite-vec, @modelcontextprotocol/sdk, uuid as deps",
+        "typescript, @types/better-sqlite3, @types/uuid, vitest, @biomejs/biome as devDeps",
+        "tsconfig.json configured for ES2022, Node16 module",
+        "vitest.config.ts exists with globals: true",
+        "biome.json exists",
+        ".gitignore excludes node_modules, dist, *.db",
+        "Directories exist: src/core, src/infra, src/cli/commands, src/mcp, bin",
+        "Scripts in package.json: format, format:check, typecheck, test, build",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "See GitHub issue #1. No tests needed — just file existence and script validation."
+    },
+    {
+      "id": "US-002",
+      "title": "Core types",
+      "description": "As a developer, I need shared types (Decision, Project, repo/client interfaces) so all layers have a common contract.",
+      "acceptanceCriteria": [
+        "src/core/types.ts exports: DECISION_STATUSES, DecisionStatus, Decision, Project, CreateDecisionInput, UpdateDecisionInput, SearchInput, SearchResult, IProjectRepo, IDecisionRepo, IEmbeddingClient",
+        "DECISION_STATUSES is readonly array of ['active', 'superseded', 'deprecated']",
+        "Copy test from GitHub issue #2 into src/core/types.test.ts",
+        "npm test -- src/core/types.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "See GitHub issue #2 for complete test file."
+    },
+    {
+      "id": "US-003",
+      "title": "Configuration",
+      "description": "As a developer, I need config resolution (defaults → env vars → CLI flags) so the tool is configurable.",
+      "acceptanceCriteria": [
+        "src/core/config.ts exports resolveConfig(overrides?) returning { ollamaUrl, model, dbPath }",
+        "Defaults: ollamaUrl=http://localhost:11434, model=qwen3-embedding:0.6b, dbPath=~/.logd/logd.db",
+        "Env vars LOGD_OLLAMA_URL, LOGD_MODEL, LOGD_DB_PATH override defaults",
+        "CLI flag overrides override env vars",
+        "Copy test from GitHub issue #3 into src/core/config.test.ts",
+        "npm test -- src/core/config.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "See GitHub issue #3 for complete test file."
+    },
+    {
+      "id": "US-004",
+      "title": "Embedding service",
+      "description": "As a developer, I need embedding template builders and a service that calls the embedding client.",
+      "acceptanceCriteria": [
+        "src/core/embedding.service.ts exports buildDocumentTemplate, buildQueryTemplate, EmbeddingService",
+        "Document template: 'Decision: {title}\\nContext: {context}\\n...' with only present fields",
+        "Query template: 'Instruct: Given a question about past decisions, retrieve relevant decision records\\nQuery: {query}'",
+        "EmbeddingService takes IEmbeddingClient via constructor",
+        "Copy test from GitHub issue #4 into src/core/embedding.service.test.ts",
+        "npm test -- src/core/embedding.service.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "See GitHub issue #4 for complete test file."
+    },
+    {
+      "id": "US-005",
+      "title": "Ollama client",
+      "description": "As a developer, I need an HTTP wrapper for Ollama's /api/embed endpoint.",
+      "acceptanceCriteria": [
+        "src/infra/ollama.client.ts exports OllamaClient implementing IEmbeddingClient",
+        "POST to {url}/api/embed with { model, input }",
+        "Returns embeddings[0] from response",
+        "Throws 'Cannot connect to Ollama at {url}. Is it running?' on connection error",
+        "Throws 'Ollama error: {status} {statusText}' on non-200",
+        "Copy test from GitHub issue #5 into src/infra/ollama.client.test.ts",
+        "npm test -- src/infra/ollama.client.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "See GitHub issue #5 for complete test file."
+    },
+    {
+      "id": "US-006",
+      "title": "Database setup and migrations",
+      "description": "As a developer, I need SQLite + sqlite-vec setup with auto-migration.",
+      "acceptanceCriteria": [
+        "src/infra/db.ts exports createDatabase(dbPath) returning Database.Database",
+        "Creates parent directories if needed",
+        "Loads sqlite-vec extension",
+        "Sets WAL journal mode and foreign_keys ON",
+        "Creates projects table (id, name UNIQUE, description, created_at)",
+        "Creates decisions table (id, project FK, title, context, alternatives, tags, status, links, created_at, updated_at)",
+        "Creates decisions_vec virtual table using vec0 with float[1024] embedding",
+        "Migrations are idempotent",
+        "Copy test from GitHub issue #6 into src/infra/db.test.ts",
+        "npm test -- src/infra/db.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "See GitHub issue #6 for complete test file."
+    },
+    {
+      "id": "US-007",
+      "title": "Project repository",
+      "description": "As a developer, I need SQLite queries for project CRUD.",
+      "acceptanceCriteria": [
+        "src/infra/project.repo.ts exports ProjectRepo implementing IProjectRepo",
+        "create stores a project",
+        "findByName is case-insensitive and trims whitespace",
+        "findByName returns null for non-existent",
+        "list returns all ordered by name",
+        "Duplicate name INSERT throws",
+        "Copy test from GitHub issue #7 into src/infra/project.repo.test.ts",
+        "npm test -- src/infra/project.repo.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "See GitHub issue #7 for complete test file. Depends on US-006."
+    },
+    {
+      "id": "US-008",
+      "title": "Decision repository",
+      "description": "As a developer, I need SQLite queries for decision CRUD and vector search.",
+      "acceptanceCriteria": [
+        "src/infra/decision.repo.ts exports DecisionRepo implementing IDecisionRepo",
+        "create inserts into both decisions and decisions_vec tables",
+        "findById parses JSON array fields (alternatives, tags, links)",
+        "update changes only specified fields, optionally replaces embedding",
+        "delete removes from both tables",
+        "list filters by project, status, respects limit, orders by created_at desc",
+        "searchByVector returns scored results via cosine distance, filterable by project",
+        "Copy test from GitHub issue #8 into src/infra/decision.repo.test.ts",
+        "npm test -- src/infra/decision.repo.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "See GitHub issue #8 for complete test file. Depends on US-006."
+    },
+    {
+      "id": "US-009",
+      "title": "Decision service",
+      "description": "As a developer, I need business logic for decision CRUD, search, and validation.",
+      "acceptanceCriteria": [
+        "src/core/decision.service.ts exports DecisionService",
+        "Constructor takes IDecisionRepo, IProjectRepo, EmbeddingService",
+        "create: validates project exists, generates UUID, computes embedding, stores, defaults status to 'active'",
+        "create: throws with available project names when project not found",
+        "getById: returns decision or throws 'Decision {id} not found'",
+        "update: partial update, uses 'input.project !== undefined' check, re-computes embedding",
+        "delete: throws if not found, delegates to repo",
+        "list: defaults limit to 20, status param typed as DecisionStatus",
+        "search: embeds query, defaults limit to 5, filters by threshold when provided",
+        "Copy test from GitHub issue #9 into src/core/decision.service.test.ts",
+        "npm test -- src/core/decision.service.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "See GitHub issue #9 for complete test file. Depends on US-004, US-007, US-008."
+    },
+    {
+      "id": "US-010",
+      "title": "Project service",
+      "description": "As a developer, I need business logic for project CRUD with name normalization.",
+      "acceptanceCriteria": [
+        "src/core/project.service.ts exports ProjectService",
+        "Constructor takes IProjectRepo",
+        "create: normalizes name (lowercase, trim), generates UUID, delegates to repo",
+        "create: throws 'Project {name} already exists' on duplicate",
+        "list: delegates to repo",
+        "Copy test from GitHub issue #10 into src/core/project.service.test.ts",
+        "npm test -- src/core/project.service.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "See GitHub issue #10 for complete test file. Depends on US-007."
+    },
+    {
+      "id": "US-011",
+      "title": "CLI entrypoint and project commands",
+      "description": "As a user, I want logd project create/list commands so I can manage projects.",
+      "acceptanceCriteria": [
+        "bin/logd.ts is a shebang entrypoint",
+        "src/cli/index.ts wires up Commander with project subcommand",
+        "src/cli/commands/project.ts implements create and list",
+        "package.json has bin entry: logd -> ./dist/bin/logd.js",
+        "npm run build succeeds",
+        "Copy test from GitHub issue #11 into src/cli/commands/project.test.ts",
+        "npm test -- src/cli/commands/project.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "See GitHub issue #11 for complete test file. Depends on US-003, US-010."
+    },
+    {
+      "id": "US-012",
+      "title": "CLI add command",
+      "description": "As a user, I want logd add <title> to create decisions.",
+      "acceptanceCriteria": [
+        "src/cli/commands/add.ts implements add command with flags: --project, --context, --alternatives, --tags, --status, --links",
+        "--project is required",
+        "Repeatable flags for alternatives, tags, links",
+        "npm run build succeeds",
+        "Copy test from GitHub issue #12 into src/cli/commands/add.test.ts",
+        "npm test -- src/cli/commands/add.test.ts passes (requires Ollama running)",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "See GitHub issue #12 for complete test file. Depends on US-009, US-011. Tests need Ollama running."
+    },
+    {
+      "id": "US-013",
+      "title": "CLI search command",
+      "description": "As a user, I want logd search <query> to find decisions semantically.",
+      "acceptanceCriteria": [
+        "src/cli/commands/search.ts implements search with flags: --project, --limit, --threshold, --verbose",
+        "Default output: title, project, similarity score, ID",
+        "Verbose output: all fields",
+        "npm run build succeeds",
+        "Copy test from GitHub issue #13 into src/cli/commands/search.test.ts",
+        "npm test -- src/cli/commands/search.test.ts passes (requires Ollama running)",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "See GitHub issue #13 for complete test file. Depends on US-009, US-011."
+    },
+    {
+      "id": "US-014",
+      "title": "CLI show command",
+      "description": "As a user, I want logd show <id> to view a decision in full detail.",
+      "acceptanceCriteria": [
+        "src/cli/commands/show.ts implements show command",
+        "Outputs all fields of the decision",
+        "Throws on non-existent ID",
+        "npm run build succeeds",
+        "Copy test from GitHub issue #14 into src/cli/commands/show.test.ts",
+        "npm test -- src/cli/commands/show.test.ts passes (requires Ollama running)",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "See GitHub issue #14 for complete test file. Depends on US-009, US-011."
+    },
+    {
+      "id": "US-015",
+      "title": "CLI list command",
+      "description": "As a user, I want logd list to see all decisions with optional filters.",
+      "acceptanceCriteria": [
+        "src/cli/commands/list.ts implements list with flags: --project, --status, --limit",
+        "Default limit: 20, ordered by created_at desc",
+        "Compact output: title, project, status, ID",
+        "npm run build succeeds",
+        "Copy test from GitHub issue #15 into src/cli/commands/list.test.ts",
+        "npm test -- src/cli/commands/list.test.ts passes (requires Ollama running)",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "See GitHub issue #15 for complete test file. Depends on US-009, US-011."
+    },
+    {
+      "id": "US-016",
+      "title": "CLI edit command",
+      "description": "As a user, I want logd edit <id> to partially update a decision.",
+      "acceptanceCriteria": [
+        "src/cli/commands/edit.ts implements edit with flags: --project, --title, --context, --alternatives, --tags, --status, --links",
+        "Only provided fields are changed",
+        "Array flags replace entire array",
+        "Re-computes embedding after edit",
+        "npm run build succeeds",
+        "Copy test from GitHub issue #16 into src/cli/commands/edit.test.ts",
+        "npm test -- src/cli/commands/edit.test.ts passes (requires Ollama running)",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "See GitHub issue #16 for complete test file. Depends on US-009, US-011."
+    },
+    {
+      "id": "US-017",
+      "title": "CLI delete command",
+      "description": "As a user, I want logd delete <id> to remove a decision immediately.",
+      "acceptanceCriteria": [
+        "src/cli/commands/delete.ts implements delete command",
+        "Immediate deletion, no confirmation",
+        "Throws on non-existent ID",
+        "npm run build succeeds",
+        "Copy test from GitHub issue #17 into src/cli/commands/delete.test.ts",
+        "npm test -- src/cli/commands/delete.test.ts passes (requires Ollama running)",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": "See GitHub issue #17 for complete test file. Depends on US-009, US-011."
+    },
+    {
+      "id": "US-018",
+      "title": "MCP server",
+      "description": "As an AI agent, I want an MCP server so I can store and search decisions programmatically.",
+      "acceptanceCriteria": [
+        "src/mcp/server.ts exports MCP server with 8 tools: logd_add_decision, logd_search_decisions, logd_show_decision, logd_edit_decision, logd_delete_decision, logd_list_decisions, logd_create_project, logd_list_projects",
+        "src/cli/commands/serve.ts implements 'logd serve' starting MCP server with stdio transport",
+        "Tools delegate to DecisionService and ProjectService",
+        "Tools return JSON content",
+        "Error responses use isError: true",
+        "Copy test from GitHub issue #18 into src/mcp/server.test.ts (adapt pseudocode to actual MCP SDK API)",
+        "npm test -- src/mcp/server.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 18,
+      "passes": false,
+      "notes": "See GitHub issue #18 for test skeleton. Depends on US-009, US-010."
+    },
+    {
+      "id": "US-019",
+      "title": "E2E smoke tests",
+      "description": "As a developer, I want E2E tests verifying the full CLI workflow.",
+      "acceptanceCriteria": [
+        "tests/e2e/cli.test.ts runs full workflow: create project → add decision → search → show → edit → list → delete",
+        "Uses mock Ollama server (HTTP server returning fixed 1024-dim vectors)",
+        "Tests error cases: add with non-existent project, duplicate project, show/delete non-existent ID",
+        "Copy test from GitHub issue #19 into tests/e2e/cli.test.ts",
+        "npm test -- tests/e2e/cli.test.ts passes",
+        "npm run format:check exits 0",
+        "npm run typecheck exits 0"
+      ],
+      "priority": 19,
+      "passes": false,
+      "notes": "See GitHub issue #19 for complete test file. Depends on all previous stories."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Ralph Progress Log
+Started: 2026-03-28
+---
+
+## Codebase Patterns
+- Spec: docs/superpowers/specs/2026-03-28-logd-design.md
+- Plan: docs/superpowers/plans/2026-03-28-logd-implementation.md
+- GitHub issues #1-#19 contain complete test files — copy them verbatim
+- Quality checks: npm run format:check && npm run typecheck && npm test
+- Biome for formatting/linting, vitest for tests
+- DI pattern: core services take repo/client interfaces as constructor params
+- sqlite-vec virtual tables: embedding stored in separate decisions_vec table, joined by id
+- Qwen3-Embedding: 1024-dim vectors, no prefix for documents, instruction prefix for queries
+---
