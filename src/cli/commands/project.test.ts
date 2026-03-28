@@ -38,7 +38,13 @@ describe("CLI project commands", () => {
 
 	it("fails on duplicate project", () => {
 		run('project create "dup"');
-		expect(() => run('project create "dup"')).toThrow();
+		try {
+			run('project create "dup"');
+			expect.fail("should have thrown");
+		} catch (e: any) {
+			expect(e.stderr).toContain("Error: Project 'dup' already exists");
+			expect(e.stderr).not.toContain("at ");
+		}
 	});
 
 	it("lists empty when no projects", () => {

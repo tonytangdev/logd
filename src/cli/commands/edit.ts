@@ -29,19 +29,24 @@ export function registerEditCommand(
 					links: string[];
 				},
 			) => {
-				const input: Record<string, unknown> = {};
-				if (opts.project !== undefined) input.project = opts.project;
-				if (opts.title !== undefined) input.title = opts.title;
-				if (opts.context !== undefined) input.context = opts.context;
-				if (opts.alternatives.length > 0)
-					input.alternatives = opts.alternatives;
-				if (opts.tags.length > 0) input.tags = opts.tags;
-				if (opts.status !== undefined)
-					input.status = opts.status as DecisionStatus;
-				if (opts.links.length > 0) input.links = opts.links;
+				try {
+					const input: Record<string, unknown> = {};
+					if (opts.project !== undefined) input.project = opts.project;
+					if (opts.title !== undefined) input.title = opts.title;
+					if (opts.context !== undefined) input.context = opts.context;
+					if (opts.alternatives.length > 0)
+						input.alternatives = opts.alternatives;
+					if (opts.tags.length > 0) input.tags = opts.tags;
+					if (opts.status !== undefined)
+						input.status = opts.status as DecisionStatus;
+					if (opts.links.length > 0) input.links = opts.links;
 
-				const decision = await decisionService.update(id, input);
-				console.log(`Updated decision: ${decision.title} (${decision.id})`);
+					const decision = await decisionService.update(id, input);
+					console.log(`Updated decision: ${decision.title} (${decision.id})`);
+				} catch (e) {
+					console.error(`Error: ${(e as Error).message}`);
+					process.exit(1);
+				}
 			},
 		);
 }

@@ -63,6 +63,14 @@ describe("CLI edit command", { timeout: 30_000 }, () => {
 	});
 
 	it("fails for non-existent ID", () => {
-		expect(() => run("edit nonexistent-uuid -s active")).toThrow();
+		try {
+			run("edit nonexistent-uuid -s active");
+			expect.fail("should have thrown");
+		} catch (e: any) {
+			expect(e.stderr).toContain(
+				"Error: Decision 'nonexistent-uuid' not found",
+			);
+			expect(e.stderr).not.toContain("at ");
+		}
 	});
 });

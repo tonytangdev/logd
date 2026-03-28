@@ -49,10 +49,22 @@ describe("CLI add command", { timeout: 30_000 }, () => {
 	});
 
 	it("fails when project is missing", () => {
-		expect(() => run('add "Test"')).toThrow();
+		try {
+			run('add "Test"');
+			expect.fail("should have thrown");
+		} catch (e: any) {
+			expect(e.stderr).toContain("required option");
+			expect(e.stderr).not.toContain("at ");
+		}
 	});
 
 	it("fails when project does not exist", () => {
-		expect(() => run('add "Test" -p nonexistent')).toThrow();
+		try {
+			run('add "Test" -p nonexistent');
+			expect.fail("should have thrown");
+		} catch (e: any) {
+			expect(e.stderr).toContain("Error: Project 'nonexistent' not found");
+			expect(e.stderr).not.toContain("at ");
+		}
 	});
 });

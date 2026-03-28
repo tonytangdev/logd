@@ -315,6 +315,45 @@ describe("DecisionService", () => {
 			const results = await service.search({ query: "test" });
 			expect(results).toHaveLength(2);
 		});
+
+		it("filters out negative scores", async () => {
+			(decisionRepo.searchByVector as ReturnType<typeof vi.fn>).mockReturnValue(
+				[
+					{ decision: makeDecision("d1"), score: 0.8 },
+					{ decision: makeDecision("d2"), score: -0.1 },
+					{ decision: makeDecision("d3"), score: 0.3 },
+				],
+			);
+
+			const results = await service.search({ query: "test" });
+			expect(results).toHaveLength(2);
+			expect(results.map((r) => r.score)).toEqual([0.8, 0.3]);
+		});
+
+		it("returns empty when all scores negative", async () => {
+			(decisionRepo.searchByVector as ReturnType<typeof vi.fn>).mockReturnValue(
+				[
+					{ decision: makeDecision("d1"), score: -0.5 },
+					{ decision: makeDecision("d2"), score: -0.2 },
+				],
+			);
+
+			const results = await service.search({ query: "test" });
+			expect(results).toHaveLength(0);
+		});
+
+		it("filters score of exactly 0", async () => {
+			(decisionRepo.searchByVector as ReturnType<typeof vi.fn>).mockReturnValue(
+				[
+					{ decision: makeDecision("d1"), score: 0.5 },
+					{ decision: makeDecision("d2"), score: 0.0 },
+				],
+			);
+
+			const results = await service.search({ query: "test" });
+			expect(results).toHaveLength(1);
+			expect(results[0].score).toBe(0.5);
+		});
 	});
 });
 

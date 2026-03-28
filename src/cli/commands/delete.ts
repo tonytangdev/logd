@@ -9,7 +9,12 @@ export function registerDeleteCommand(
 		.command("delete <id>")
 		.description("Delete a decision")
 		.action(async (id: string) => {
-			await decisionService.delete(id);
-			console.log(`Deleted decision: ${id}`);
+			try {
+				await decisionService.delete(id);
+				console.log(`Deleted decision: ${id}`);
+			} catch (e) {
+				console.error(`Error: ${(e as Error).message}`);
+				process.exit(1);
+			}
 		});
 }

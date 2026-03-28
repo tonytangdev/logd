@@ -117,10 +117,12 @@ export class DecisionService {
 			input.project,
 		);
 
-		if (input.threshold !== undefined) {
-			return results.filter((r) => r.score >= input.threshold!);
-		}
-		return results;
+		return results.filter((r) => {
+			if (r.score <= 0) return false;
+			if (input.threshold !== undefined && r.score < input.threshold)
+				return false;
+			return true;
+		});
 	}
 
 	private async validateProject(name: string): Promise<void> {

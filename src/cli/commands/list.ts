@@ -13,19 +13,24 @@ export function registerListCommand(
 		.option("-s, --status <status>", "Filter by status")
 		.option("-n, --limit <number>", "Max results", "20")
 		.action((opts: { project?: string; status?: string; limit: string }) => {
-			const decisions = decisionService.list({
-				project: opts.project,
-				status: opts.status as DecisionStatus | undefined,
-				limit: Number.parseInt(opts.limit, 10),
-			});
+			try {
+				const decisions = decisionService.list({
+					project: opts.project,
+					status: opts.status as DecisionStatus | undefined,
+					limit: Number.parseInt(opts.limit, 10),
+				});
 
-			if (decisions.length === 0) {
-				console.log("No decisions found.");
-				return;
-			}
+				if (decisions.length === 0) {
+					console.log("No decisions found.");
+					return;
+				}
 
-			for (const d of decisions) {
-				console.log(`${d.title} | ${d.project} | ${d.status} | ${d.id}`);
+				for (const d of decisions) {
+					console.log(`${d.title} | ${d.project} | ${d.status} | ${d.id}`);
+				}
+			} catch (e) {
+				console.error(`Error: ${(e as Error).message}`);
+				process.exit(1);
 			}
 		});
 }

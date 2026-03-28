@@ -109,7 +109,8 @@ export class DecisionRepo implements IDecisionRepo {
 		}
 
 		if (setClauses.length > 0) {
-			setClauses.push("updated_at = datetime('now')");
+			setClauses.push("updated_at = ?");
+			values.push(new Date().toISOString());
 			this.db
 				.prepare(`UPDATE decisions SET ${setClauses.join(", ")} WHERE id = ?`)
 				.run(...values, id);

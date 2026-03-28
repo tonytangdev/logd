@@ -12,22 +12,32 @@ export function registerProjectCommand(
 		.description("Create a new project")
 		.option("-d, --description <desc>", "Project description")
 		.action((name: string, opts: { description?: string }) => {
-			const p = projectService.create(name, opts.description);
-			console.log(`Created project: ${p.name}`);
+			try {
+				const p = projectService.create(name, opts.description);
+				console.log(`Created project: ${p.name}`);
+			} catch (e) {
+				console.error(`Error: ${(e as Error).message}`);
+				process.exit(1);
+			}
 		});
 
 	project
 		.command("list")
 		.description("List all projects")
 		.action(() => {
-			const projects = projectService.list();
-			if (projects.length === 0) {
-				console.log("No projects found.");
-				return;
-			}
-			for (const p of projects) {
-				const desc = p.description ? ` - ${p.description}` : "";
-				console.log(`${p.name}${desc}`);
+			try {
+				const projects = projectService.list();
+				if (projects.length === 0) {
+					console.log("No projects found.");
+					return;
+				}
+				for (const p of projects) {
+					const desc = p.description ? ` - ${p.description}` : "";
+					console.log(`${p.name}${desc}`);
+				}
+			} catch (e) {
+				console.error(`Error: ${(e as Error).message}`);
+				process.exit(1);
 			}
 		});
 }

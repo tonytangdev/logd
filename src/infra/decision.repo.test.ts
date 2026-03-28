@@ -102,6 +102,19 @@ describe("DecisionRepo", () => {
 		expect(found?.title).toBe("Use MySQL");
 	});
 
+	it("update sets updatedAt to ISO 8601 format and changes it", () => {
+		const original = makeDecision();
+		repo.create(original, fakeEmbedding(1));
+
+		repo.update("dec-1", { title: "Use MySQL" });
+		const found = repo.findById("dec-1");
+
+		expect(found?.updatedAt).toMatch(
+			/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+		);
+		expect(found?.updatedAt).not.toBe(original.updatedAt);
+	});
+
 	it("update replaces JSON arrays entirely", () => {
 		repo.create(makeDecision({ tags: ["old-tag"] }), fakeEmbedding(1));
 		repo.update("dec-1", { tags: ["new-tag-1", "new-tag-2"] });
