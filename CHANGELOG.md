@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/tonytangdev/logd/compare/v1.0.2...v1.0.3) (2026-03-28)
+
+
+### Bug Fixes
+
+* make footer year dynamic ([36c554e](https://github.com/tonytangdev/logd/commit/36c554e27f9ba12a70b50bd4808a246da0596e22))
+* use tabs in vercel.json for biome ([14bbdae](https://github.com/tonytangdev/logd/commit/14bbdaef8173809c516938d9299971bca4a00fd9))
+
 ## [1.0.2](https://github.com/tonytangdev/logd/compare/v1.0.1...v1.0.2) (2026-03-28)
 
 
