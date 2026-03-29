@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
-import { authMiddleware } from "../middleware/auth.js";
-import { createInMemoryDatabase } from "../../persistence/database.js";
-import { SqliteProjectRepo } from "../../persistence/sqlite.project.repo.js";
-import { SqliteDecisionRepo } from "../../persistence/sqlite.decision.repo.js";
-import { ProjectService } from "../../../application/project.service.js";
+import { describe, expect, it, vi } from "vitest";
 import { DecisionService } from "../../../application/decision.service.js";
+import { ProjectService } from "../../../application/project.service.js";
 import type { EmbeddingProvider } from "../../../ports/embedding.provider.js";
+import { createInMemoryDatabase } from "../../persistence/database.js";
+import { SqliteDecisionRepo } from "../../persistence/sqlite.decision.repo.js";
+import { SqliteProjectRepo } from "../../persistence/sqlite.project.repo.js";
+import { authMiddleware } from "../middleware/auth.js";
 import { decisionRoutes } from "./decisions.js";
 
 const TOKEN = "test-token";

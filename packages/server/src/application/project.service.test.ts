@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { ProjectRepository } from "../ports/project.repository.js";
 import { ProjectService } from "./project.service.js";
 
@@ -6,7 +6,7 @@ function mockProjectRepo(): ProjectRepository & { names: Set<string> } {
 	const names = new Set<string>();
 	return {
 		names,
-		create(name: string, description: string | null) {
+		create(name: string, _description: string | null) {
 			names.add(name.toLowerCase());
 		},
 		findByName(name: string) {

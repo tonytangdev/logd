@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createInMemoryDatabase } from "./database.js";
 import { SqliteProjectRepo } from "./sqlite.project.repo.js";
 
