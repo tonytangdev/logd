@@ -31,8 +31,8 @@ export function decisionRoutes(service: DecisionService): Hono<AppEnv> {
 		return c.json(decision, 201);
 	});
 
-	router.get("/:id", (c) => {
-		const decision = service.get(c.req.param("id"));
+	router.get("/:id", async (c) => {
+		const decision = await service.get(c.req.param("id"));
 		if (!decision) {
 			return c.text(`Decision '${c.req.param("id")}' not found`, 404);
 		}
@@ -52,17 +52,17 @@ export function decisionRoutes(service: DecisionService): Hono<AppEnv> {
 		}
 	});
 
-	router.delete("/:id", (c) => {
-		service.delete(c.req.param("id"));
+	router.delete("/:id", async (c) => {
+		await service.delete(c.req.param("id"));
 		return c.body(null, 204);
 	});
 
-	router.get("/", (c) => {
+	router.get("/", async (c) => {
 		const project = c.req.query("project");
 		const status = c.req.query("status");
 		const limit = c.req.query("limit");
 
-		const decisions = service.list({
+		const decisions = await service.list({
 			project: project || undefined,
 			status: (status as "active" | "superseded" | "deprecated") || undefined,
 			limit: limit ? Number(limit) : undefined,

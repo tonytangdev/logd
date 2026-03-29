@@ -12,7 +12,7 @@ export function userRoutes(userService: UserService): Hono<AppEnv> {
 		if (!body.email) return c.text("email is required", 400);
 		if (!body.name) return c.text("name is required", 400);
 		try {
-			const { user, rawToken } = userService.create(body.email, body.name);
+			const { user, rawToken } = await userService.create(body.email, body.name);
 			return c.json({ user, token: rawToken }, 201);
 		} catch (e) {
 			if (e instanceof ConflictError) return c.text(e.message, 409);
@@ -20,8 +20,8 @@ export function userRoutes(userService: UserService): Hono<AppEnv> {
 		}
 	});
 
-	router.get("/", (c) => {
-		const users = userService.listByTeam(c.get("teamId"));
+	router.get("/", async (c) => {
+		const users = await userService.listByTeam(c.get("teamId"));
 		return c.json(users, 200);
 	});
 

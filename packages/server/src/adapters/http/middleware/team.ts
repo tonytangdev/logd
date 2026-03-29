@@ -12,7 +12,7 @@ export function teamMiddleware(
 		}
 
 		const userId = c.get("userId");
-		const membership = teamService.getMembership(userId, teamName);
+		const membership = await teamService.getMembership(userId, teamName);
 		if (!membership) {
 			return c.text("Access denied: not a member of this team.", 403);
 		}

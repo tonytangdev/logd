@@ -8,10 +8,10 @@ export function createAuthMiddleware(
 ): MiddlewareHandler<AppEnv> {
 	return bearerAuth({
 		verifyToken: async (token, c) => {
-			const result = tokenService.authenticate(token);
+			const result = await tokenService.authenticate(token);
 			if (!result) return false;
 			c.set("userId", result.id);
-			tokenService.touch(token);
+			await tokenService.touch(token);
 			return true;
 		},
 	});
