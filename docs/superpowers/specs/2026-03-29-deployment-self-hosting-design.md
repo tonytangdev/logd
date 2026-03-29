@@ -9,18 +9,25 @@ Containerize the logd server for small-team VPS deployment. SQLite for now, desi
 
 ## Dockerfile
 
-Multi-stage build in repo root (monorepo-aware):
+Multi-stage build in repo root (monorepo-aware). Use `node:22-slim` (Debian-based) instead of Alpine to avoid musl compatibility issues with `better-sqlite3` and `sqlite-vec` native extensions.
+
+A `.dockerignore` must be created to exclude `node_modules`, `.git`, `dist`, `*.db`, and `.env` files from the build context.
 
 **Stage 1 — Build:**
-- Base: `node:22-alpine`
+- Base: `node:22-slim`
+- Install build tools: `build-essential`, `python3` (for node-gyp / native modules)
 - Copy root `package.json`, `package-lock.json`, workspace package files
-- `npm ci` to install all deps
+- `npm ci` to install all deps (native modules compile here)
 - Build `@logd/shared` then `@logd/server`
 
 **Stage 2 — Production:**
-- Base: `node:22-alpine`
-- Copy built output + production node_modules
-- Install native deps for `better-sqlite3` and `sqlite-vec` (build-base, python3)
+- Base: `node:22-slim`
+- Copy from build stage:
+  - `packages/server/dist/` — compiled server
+  - `packages/shared/dist/` — compiled shared types
+  - `packages/server/package.json`, `packages/shared/package.json`, root `package.json`
+  - `node_modules/` — already contains native binaries compiled for the same Debian base
+- No rebuild needed — same OS/arch between stages
 - Expose port 3000
 - `CMD ["node", "packages/server/dist/index.js"]`
 
@@ -38,7 +45,7 @@ services:
       LOGD_OLLAMA_URL: http://ollama:11434
       LOGD_MODEL: ${LOGD_MODEL:-qwen3-embedding:0.6b}
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)throw 1})"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -73,7 +80,7 @@ Two public routes (no auth middleware):
 - Success: `200 { "status": "ready", "db": "ok", "ollama": "ok" }`
 - Failure: `503 { "status": "not_ready", "db": "ok"|"error", "ollama": "ok"|"error" }`
 
-Both registered before auth middleware chain.
+**Routing strategy:** Register health routes on the Hono app *before* the `app.use("*", authMiddleware)` call so they bypass auth. No sub-app or route grouping needed — just ordering.
 
 ## Environment & Configuration
 
@@ -88,7 +95,7 @@ Both registered before auth middleware chain.
 
 **New:**
 - `.env.example` at repo root with all vars and defaults
-- Startup validation: fail fast with clear error if `LOGD_API_TOKEN` is missing
+- Startup validation: warn (not crash) if `LOGD_API_TOKEN` is missing — bootstrap already handles this gracefully by skipping admin creation when no token is set. The token is only required on first run to seed the admin user.
 
 ## Documentation
 
