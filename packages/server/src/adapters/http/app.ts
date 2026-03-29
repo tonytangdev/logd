@@ -8,6 +8,7 @@ import { createAuthMiddleware } from "./middleware/auth.js";
 import { teamMiddleware } from "./middleware/team.js";
 import { authRoutes } from "./routes/auth.js";
 import { decisionRoutes } from "./routes/decisions.js";
+import { type HealthDeps, healthRoutes } from "./routes/health.js";
 import { projectRoutes } from "./routes/projects.js";
 import { teamRoutes } from "./routes/teams.js";
 import { tokenRoutes } from "./routes/tokens.js";
@@ -27,10 +28,12 @@ export interface AppDeps {
 	userService: UserService;
 	decisionService: DecisionService;
 	projectService: ProjectService;
+	health: HealthDeps;
 }
 
 export function createApp(deps: AppDeps): Hono<AppEnv> {
 	const app = new Hono<AppEnv>();
+	app.route("/", healthRoutes(deps.health));
 	app.use("*", createAuthMiddleware(deps.tokenService));
 	app.use("*", teamMiddleware(deps.teamService));
 	app.route("/auth", authRoutes());

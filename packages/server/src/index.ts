@@ -40,6 +40,7 @@ const app = createApp({
 	userService,
 	decisionService,
 	projectService,
+	health: { db, ollamaUrl: config.ollamaUrl },
 });
 
 serve({ fetch: app.fetch, port: config.port }, (info) => {
