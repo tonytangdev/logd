@@ -1,9 +1,10 @@
 import { Hono } from "hono";
 import type { DecisionService } from "../../../application/decision.service.js";
 import { NotFoundError } from "../../../application/decision.service.js";
+import type { AppEnv } from "../app.js";
 
-export function decisionRoutes(service: DecisionService): Hono {
-	const router = new Hono();
+export function decisionRoutes(service: DecisionService): Hono<AppEnv> {
+	const router = new Hono<AppEnv>();
 
 	// IMPORTANT: /search must come before /:id
 	router.post("/search", async (c) => {
@@ -16,6 +17,7 @@ export function decisionRoutes(service: DecisionService): Hono {
 			body.query,
 			body.threshold ?? 0,
 			body.limit ?? 20,
+			c.get("teamId"),
 		);
 		return c.json(results, 200);
 	});
@@ -64,6 +66,7 @@ export function decisionRoutes(service: DecisionService): Hono {
 			project: project || undefined,
 			status: (status as "active" | "superseded" | "deprecated") || undefined,
 			limit: limit ? Number(limit) : undefined,
+			teamId: c.get("teamId"),
 		});
 		return c.json(decisions, 200);
 	});

@@ -1,30 +1,49 @@
 import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
+import type { AppEnv } from "../app.js";
+import { bootstrap } from "../../../application/bootstrap.js";
 import { ProjectService } from "../../../application/project.service.js";
+import { TeamService } from "../../../application/team.service.js";
+import { TokenService } from "../../../application/token.service.js";
 import { createInMemoryDatabase } from "../../persistence/database.js";
 import { SqliteProjectRepo } from "../../persistence/sqlite.project.repo.js";
-import { authMiddleware } from "../middleware/auth.js";
+import { SqliteTeamRepo } from "../../persistence/sqlite.team.repo.js";
+import { SqliteTokenRepo } from "../../persistence/sqlite.token.repo.js";
+import { SqliteUserRepo } from "../../persistence/sqlite.user.repo.js";
+import { createAuthMiddleware } from "../middleware/auth.js";
+import { teamMiddleware } from "../middleware/team.js";
 import { projectRoutes } from "./projects.js";
 
-const TOKEN = "test-token";
+const API_TOKEN = "test-admin-token";
+
 const headers = {
-	Authorization: `Bearer ${TOKEN}`,
+	Authorization: `Bearer ${API_TOKEN}`,
+	"X-Team": "default",
 	"Content-Type": "application/json",
 };
 
-function makeApp() {
+function setup() {
 	const db = createInMemoryDatabase();
-	const repo = new SqliteProjectRepo(db);
-	const service = new ProjectService(repo);
-	const app = new Hono();
-	app.use("*", authMiddleware(TOKEN));
-	app.route("/projects", projectRoutes(service));
+	const userRepo = new SqliteUserRepo(db);
+	const teamRepo = new SqliteTeamRepo(db);
+	const tokenRepo = new SqliteTokenRepo(db);
+	const projectRepo = new SqliteProjectRepo(db);
+	const tokenService = new TokenService(tokenRepo);
+	const teamService = new TeamService(teamRepo);
+	const projectService = new ProjectService(projectRepo);
+
+	bootstrap({ db, userRepo, teamRepo, tokenService, apiToken: API_TOKEN });
+
+	const app = new Hono<AppEnv>();
+	app.use("*", createAuthMiddleware(tokenService));
+	app.use("*", teamMiddleware(teamService));
+	app.route("/projects", projectRoutes(projectService));
 	return app;
 }
 
 describe("POST /projects", () => {
 	it("creates project — 201", async () => {
-		const app = makeApp();
+		const app = setup();
 		const res = await app.request("/projects", {
 			method: "POST",
 			headers,
@@ -34,7 +53,7 @@ describe("POST /projects", () => {
 	});
 
 	it("returns 400 when name missing", async () => {
-		const app = makeApp();
+		const app = setup();
 		const res = await app.request("/projects", {
 			method: "POST",
 			headers,
@@ -45,7 +64,7 @@ describe("POST /projects", () => {
 	});
 
 	it("returns 409 on duplicate", async () => {
-		const app = makeApp();
+		const app = setup();
 		await app.request("/projects", {
 			method: "POST",
 			headers,
