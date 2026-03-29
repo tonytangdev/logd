@@ -10,7 +10,11 @@ export interface TeamRepository {
 
 	addMember(teamId: string, userId: string, role: TeamRole): Promise<void>;
 	removeMember(teamId: string, userId: string): Promise<void>;
-	updateMemberRole(teamId: string, userId: string, role: TeamRole): Promise<void>;
+	updateMemberRole(
+		teamId: string,
+		userId: string,
+		role: TeamRole,
+	): Promise<void>;
 	getMembership(
 		userId: string,
 		teamName: string,

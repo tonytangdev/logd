@@ -116,10 +116,7 @@ export class PgTeamRepo implements TeamRepository {
 				role: schema.teamMembers.role,
 			})
 			.from(schema.teamMembers)
-			.innerJoin(
-				schema.teams,
-				eq(schema.teamMembers.teamId, schema.teams.id),
-			)
+			.innerJoin(schema.teams, eq(schema.teamMembers.teamId, schema.teams.id))
 			.where(
 				and(
 					eq(schema.teamMembers.userId, userId),

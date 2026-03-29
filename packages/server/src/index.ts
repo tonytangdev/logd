@@ -17,7 +17,8 @@ import { loadConfig } from "./config.js";
 
 async function main() {
 	const config = loadConfig();
-	if (!config.apiToken) console.warn("LOGD_API_TOKEN not set — bootstrap will skip admin creation");
+	if (!config.apiToken)
+		console.warn("LOGD_API_TOKEN not set — bootstrap will skip admin creation");
 	const db = await createDatabase(config.databaseUrl);
 	const embeddingProvider = new OllamaProvider(config.ollamaUrl, config.model);
 	const userRepo = new PgUserRepo(db);
@@ -30,11 +31,27 @@ async function main() {
 	const userService = new UserService(userRepo, tokenService);
 	const decisionService = new DecisionService(decisionRepo, embeddingProvider);
 	const projectService = new ProjectService(projectRepo);
-	await bootstrap({ db, userRepo, teamRepo, tokenService, apiToken: config.apiToken });
-	const app = createApp({ tokenService, teamService, userService, decisionService, projectService, health: { db, ollamaUrl: config.ollamaUrl } });
+	await bootstrap({
+		db,
+		userRepo,
+		teamRepo,
+		tokenService,
+		apiToken: config.apiToken,
+	});
+	const app = createApp({
+		tokenService,
+		teamService,
+		userService,
+		decisionService,
+		projectService,
+		health: { db, ollamaUrl: config.ollamaUrl },
+	});
 	serve({ fetch: app.fetch, port: config.port }, (info) => {
 		console.log(`logd server listening on http://localhost:${info.port}`);
 	});
 }
 
-main().catch((err) => { console.error("Failed to start server:", err); process.exit(1); });
+main().catch((err) => {
+	console.error("Failed to start server:", err);
+	process.exit(1);
+});

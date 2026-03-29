@@ -26,7 +26,11 @@ export class TeamService {
 		return this.repo.listByUser(userId);
 	}
 
-	async addMember(teamId: string, userId: string, role: TeamRole): Promise<void> {
+	async addMember(
+		teamId: string,
+		userId: string,
+		role: TeamRole,
+	): Promise<void> {
 		await this.repo.addMember(teamId, userId, role);
 	}
 
@@ -34,7 +38,11 @@ export class TeamService {
 		await this.repo.removeMember(teamId, userId);
 	}
 
-	async updateMemberRole(teamId: string, userId: string, role: TeamRole): Promise<void> {
+	async updateMemberRole(
+		teamId: string,
+		userId: string,
+		role: TeamRole,
+	): Promise<void> {
 		await this.repo.updateMemberRole(teamId, userId, role);
 	}
 

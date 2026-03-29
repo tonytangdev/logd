@@ -10,7 +10,10 @@ export class UserService {
 		private tokenService: TokenService,
 	) {}
 
-	async create(email: string, name: string): Promise<{ user: User; rawToken: string }> {
+	async create(
+		email: string,
+		name: string,
+	): Promise<{ user: User; rawToken: string }> {
 		if (await this.repo.findByEmail(email)) {
 			throw new ConflictError(`User with email '${email}' already exists`);
 		}

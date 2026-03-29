@@ -12,7 +12,10 @@ export function userRoutes(userService: UserService): Hono<AppEnv> {
 		if (!body.email) return c.text("email is required", 400);
 		if (!body.name) return c.text("name is required", 400);
 		try {
-			const { user, rawToken } = await userService.create(body.email, body.name);
+			const { user, rawToken } = await userService.create(
+				body.email,
+				body.name,
+			);
 			return c.json({ user, token: rawToken }, 201);
 		} catch (e) {
 			if (e instanceof ConflictError) return c.text(e.message, 409);

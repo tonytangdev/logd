@@ -60,7 +60,12 @@ export class DecisionService {
 		teamId?: string,
 	): Promise<SearchResult[]> {
 		const vector = await this.embedding.embed(buildQueryTemplate(query));
-		const results = await this.repo.searchByVector(vector, limit, project, teamId);
+		const results = await this.repo.searchByVector(
+			vector,
+			limit,
+			project,
+			teamId,
+		);
 		return results.filter((r) => r.score >= threshold);
 	}
 }

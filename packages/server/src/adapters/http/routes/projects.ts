@@ -13,7 +13,11 @@ export function projectRoutes(service: ProjectService): Hono<AppEnv> {
 		}
 
 		try {
-			await service.create(body.name, body.description ?? null, c.get("teamId"));
+			await service.create(
+				body.name,
+				body.description ?? null,
+				c.get("teamId"),
+			);
 			return c.body(null, 201);
 		} catch (e) {
 			if (e instanceof ConflictError) {
