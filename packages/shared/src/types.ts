@@ -59,3 +59,34 @@ export interface SearchResult {
 	decision: Decision;
 	score: number;
 }
+
+export interface User {
+	id: string;
+	email: string;
+	name: string;
+	createdAt: string;
+}
+
+export interface Team {
+	id: string;
+	name: string;
+	createdAt: string;
+}
+
+export const TEAM_ROLES = ["admin", "member"] as const;
+export type TeamRole = (typeof TEAM_ROLES)[number];
+
+export interface TeamMember {
+	userId: string;
+	teamId: string;
+	role: TeamRole;
+	createdAt: string;
+}
+
+export interface Token {
+	id: string;
+	userId: string;
+	name: string;
+	createdAt: string;
+	lastUsedAt: string | null;
+}
