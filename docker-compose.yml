@@ -1,12 +1,28 @@
 services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: logd
+      POSTGRES_PASSWORD: logd
+      POSTGRES_DB: logd
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logd"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
   server:
     build: .
     ports:
       - "${LOGD_PORT:-3000}:3000"
-    volumes:
-      - logd-data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
-      LOGD_DB_PATH: /data/logd-server.db
+      DATABASE_URL: postgresql://logd:logd@postgres:5432/logd
       LOGD_API_TOKEN: ${LOGD_API_TOKEN}
       LOGD_OLLAMA_URL: ${LOGD_OLLAMA_URL:-http://ollama:11434}
       LOGD_MODEL: ${LOGD_MODEL:-qwen3-embedding:0.6b}
@@ -27,5 +43,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  logd-data:
+  pgdata:
   ollama-data:
