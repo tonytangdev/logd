@@ -17,8 +17,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run format:check
-      - run: npm run typecheck
       - run: npm run build
+      - run: npm run typecheck
 
   test:
     runs-on: ubuntu-latest
@@ -30,7 +30,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npm test -- --exclude 'src/cli/commands/*.test.ts' --exclude 'tests/e2e/**'
+      - run: npm run test -w packages/cli -- --exclude 'src/cli/commands/*.test.ts' --exclude 'tests/e2e/**'
 
   release-please:
     needs: [check, test]
@@ -47,7 +47,8 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          release-type: node
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
   publish:
     needs: release-please
@@ -66,4 +67,4 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm ci
       - run: npm run build
-      - run: npm publish --provenance --access public
+      - run: npm publish -w packages/cli --provenance --access public
