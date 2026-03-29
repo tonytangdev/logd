@@ -6,20 +6,20 @@ import { resolveConfig } from "../core/config.js";
 import { DecisionService } from "../core/decision.service.js";
 import { EmbeddingService } from "../core/embedding.service.js";
 import { ProjectService } from "../core/project.service.js";
+import { CredentialStore } from "../infra/credentials.js";
 import { createDatabase } from "../infra/db.js";
 import { DecisionRepo } from "../infra/decision.repo.js";
-import { CredentialStore } from "../infra/credentials.js";
 import { OllamaClient } from "../infra/ollama.client.js";
 import { ProjectRepo } from "../infra/project.repo.js";
 import { registerAddCommand } from "./commands/add.js";
 import { registerDeleteCommand } from "./commands/delete.js";
 import { registerEditCommand } from "./commands/edit.js";
 import { registerListCommand } from "./commands/list.js";
+import { registerLoginCommand } from "./commands/login.js";
 import { registerProjectCommand } from "./commands/project.js";
 import { registerSearchCommand } from "./commands/search.js";
 import { registerServeCommand } from "./commands/serve.js";
 import { registerShowCommand } from "./commands/show.js";
-import { registerLoginCommand } from "./commands/login.js";
 
 export function createCli(): Command {
 	const config = resolveConfig();
@@ -29,8 +29,14 @@ export function createCli(): Command {
 	const projectService = new ProjectService(projectRepo);
 	const ollamaClient = new OllamaClient(config.ollamaUrl, config.model);
 	const embeddingService = new EmbeddingService(ollamaClient);
-	const credentialStore = new CredentialStore(join(homedir(), ".logd", "credentials.json"));
-	const backendFactory = new BackendFactory(decisionRepo, credentialStore, embeddingService);
+	const credentialStore = new CredentialStore(
+		join(homedir(), ".logd", "credentials.json"),
+	);
+	const backendFactory = new BackendFactory(
+		decisionRepo,
+		credentialStore,
+		embeddingService,
+	);
 	const decisionService = new DecisionService(projectRepo, backendFactory);
 
 	const program = new Command();

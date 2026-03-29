@@ -8,7 +8,12 @@ export class ProjectService {
 		this.repo = repo;
 	}
 
-	create(name: string, description?: string, server?: string, team?: string): Project {
+	create(
+		name: string,
+		description?: string,
+		server?: string,
+		team?: string,
+	): Project {
 		const normalized = name.trim().toLowerCase();
 
 		if (server && !team) {

@@ -1,4 +1,9 @@
 import { describe, expect, it } from "vitest";
+import type {
+	DecisionBackend,
+	LocalDecisionSearch,
+	RemoteDecisionSearch,
+} from "./types.js";
 import {
 	type CreateDecisionInput,
 	DECISION_STATUSES,
@@ -9,7 +14,6 @@ import {
 	type SearchResult,
 	type UpdateDecisionInput,
 } from "./types.js";
-import type { DecisionBackend, LocalDecisionSearch, RemoteDecisionSearch } from "./types.js";
 
 describe("DECISION_STATUSES", () => {
 	it("contains exactly active, superseded, deprecated", () => {

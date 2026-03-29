@@ -33,7 +33,14 @@ export class ProjectRepo implements IProjectRepo {
 			.prepare(
 				"INSERT INTO projects (id, name, description, created_at, server, team) VALUES (?, ?, ?, ?, ?, ?)",
 			)
-			.run(project.id, project.name, project.description, project.createdAt, project.server, project.team);
+			.run(
+				project.id,
+				project.name,
+				project.description,
+				project.createdAt,
+				project.server,
+				project.team,
+			);
 	}
 
 	findByName(name: string): Project | null {

@@ -78,7 +78,12 @@ describe("ProjectService", () => {
 
 	describe("create with server/team", () => {
 		it("stores server and team", () => {
-			const result = service.create("remote", "desc", "https://api.example.com", "acme");
+			const result = service.create(
+				"remote",
+				"desc",
+				"https://api.example.com",
+				"acme",
+			);
 			expect(result.server).toBe("https://api.example.com");
 			expect(result.team).toBe("acme");
 		});
@@ -90,11 +95,15 @@ describe("ProjectService", () => {
 		});
 
 		it("throws when server without team", () => {
-			expect(() => service.create("test", undefined, "https://api.example.com")).toThrow("--team is required");
+			expect(() =>
+				service.create("test", undefined, "https://api.example.com"),
+			).toThrow("--team is required");
 		});
 
 		it("throws when team without server", () => {
-			expect(() => service.create("test", undefined, undefined, "acme")).toThrow("--server is required");
+			expect(() =>
+				service.create("test", undefined, undefined, "acme"),
+			).toThrow("--server is required");
 		});
 	});
 

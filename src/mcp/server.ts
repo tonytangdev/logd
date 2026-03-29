@@ -24,7 +24,12 @@ export function createMcpServer(
 		},
 		async (args) => {
 			try {
-				const project = projectService.create(args.name, args.description, args.server, args.team);
+				const project = projectService.create(
+					args.name,
+					args.description,
+					args.server,
+					args.team,
+				);
 				return { content: [{ type: "text", text: JSON.stringify(project) }] };
 			} catch (err) {
 				return {

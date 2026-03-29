@@ -13,16 +13,28 @@ export function registerProjectCommand(
 		.option("-d, --description <desc>", "Project description")
 		.option("--server <url>", "Remote server URL")
 		.option("--team <team>", "Team name on the remote server")
-		.action((name: string, opts: { description?: string; server?: string; team?: string }) => {
-			try {
-				const p = projectService.create(name, opts.description, opts.server, opts.team);
-				const remote = p.server ? ` (remote: ${p.server}, team: ${p.team})` : "";
-				console.log(`Created project: ${p.name}${remote}`);
-			} catch (e) {
-				console.error(`Error: ${(e as Error).message}`);
-				process.exit(1);
-			}
-		});
+		.action(
+			(
+				name: string,
+				opts: { description?: string; server?: string; team?: string },
+			) => {
+				try {
+					const p = projectService.create(
+						name,
+						opts.description,
+						opts.server,
+						opts.team,
+					);
+					const remote = p.server
+						? ` (remote: ${p.server}, team: ${p.team})`
+						: "";
+					console.log(`Created project: ${p.name}${remote}`);
+				} catch (e) {
+					console.error(`Error: ${(e as Error).message}`);
+					process.exit(1);
+				}
+			},
+		);
 
 	project
 		.command("list")

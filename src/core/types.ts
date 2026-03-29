@@ -90,7 +90,11 @@ export interface IEmbeddingClient {
 export interface DecisionBackend {
 	create(decision: Decision, embedding: number[]): Promise<void>;
 	findById(id: string): Promise<Decision | null>;
-	update(id: string, input: UpdateDecisionInput, embedding?: number[]): Promise<void>;
+	update(
+		id: string,
+		input: UpdateDecisionInput,
+		embedding?: number[],
+	): Promise<void>;
 	delete(id: string): Promise<void>;
 	list(options?: {
 		project?: string;

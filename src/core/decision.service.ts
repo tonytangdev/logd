@@ -37,13 +37,17 @@ export class DecisionService {
 			updatedAt: now,
 		};
 
-		const embedding = embeddings ? await embeddings.embedDecision(decision) : [];
+		const embedding = embeddings
+			? await embeddings.embedDecision(decision)
+			: [];
 		await decisions.create(decision, embedding);
 		return decision;
 	}
 
 	async getById(id: string): Promise<Decision> {
-		const decision = await this.backendFactory.localBackend().decisions.findById(id);
+		const decision = await this.backendFactory
+			.localBackend()
+			.decisions.findById(id);
 		if (!decision) {
 			throw new Error(`Decision '${id}' not found`);
 		}
@@ -51,7 +55,9 @@ export class DecisionService {
 	}
 
 	async update(id: string, input: UpdateDecisionInput): Promise<Decision> {
-		const existing = await this.backendFactory.localBackend().decisions.findById(id);
+		const existing = await this.backendFactory
+			.localBackend()
+			.decisions.findById(id);
 		if (!existing) {
 			throw new Error(`Decision '${id}' not found`);
 		}
@@ -68,7 +74,10 @@ export class DecisionService {
 			project: input.project !== undefined ? input.project : existing.project,
 			title: input.title !== undefined ? input.title : existing.title,
 			context: input.context !== undefined ? input.context : existing.context,
-			alternatives: input.alternatives !== undefined ? input.alternatives : existing.alternatives,
+			alternatives:
+				input.alternatives !== undefined
+					? input.alternatives
+					: existing.alternatives,
 			tags: input.tags !== undefined ? input.tags : existing.tags,
 			status: input.status !== undefined ? input.status : existing.status,
 			links: input.links !== undefined ? input.links : existing.links,
@@ -77,13 +86,17 @@ export class DecisionService {
 			).toISOString(),
 		};
 
-		const embedding = embeddings ? await embeddings.embedDecision(updated) : undefined;
+		const embedding = embeddings
+			? await embeddings.embedDecision(updated)
+			: undefined;
 		await decisions.update(id, input, embedding);
 		return updated;
 	}
 
 	async delete(id: string): Promise<void> {
-		const decision = await this.backendFactory.localBackend().decisions.findById(id);
+		const decision = await this.backendFactory
+			.localBackend()
+			.decisions.findById(id);
 		if (!decision) {
 			throw new Error(`Decision '${id}' not found`);
 		}
@@ -121,10 +134,17 @@ export class DecisionService {
 			const { search, embeddings } = this.backendFactory.forProject(project);
 
 			if (embeddings && "searchByVector" in search) {
-				return this.localSearch(search as LocalDecisionSearch, embeddings, input);
+				return this.localSearch(
+					search as LocalDecisionSearch,
+					embeddings,
+					input,
+				);
 			}
 			return (search as RemoteDecisionSearch).searchByQuery(
-				input.project, input.query, threshold, limit,
+				input.project,
+				input.query,
+				threshold,
+				limit,
 			);
 		}
 
@@ -138,10 +158,15 @@ export class DecisionService {
 		input: SearchInput,
 	): Promise<SearchResult[]> {
 		const embedding = await embeddings.embedQuery(input.query);
-		const results = await search.searchByVector(embedding, input.limit ?? 5, input.project);
+		const results = await search.searchByVector(
+			embedding,
+			input.limit ?? 5,
+			input.project,
+		);
 		return results.filter((r) => {
 			if (r.score <= 0) return false;
-			if (input.threshold !== undefined && r.score < input.threshold) return false;
+			if (input.threshold !== undefined && r.score < input.threshold)
+				return false;
 			return true;
 		});
 	}
@@ -151,7 +176,9 @@ export class DecisionService {
 		if (!project) {
 			const all = this.projectRepo.list();
 			const names = all.length > 0 ? all.map((p) => p.name).join(", ") : "none";
-			throw new Error(`Project '${name}' not found. Available projects: ${names}`);
+			throw new Error(
+				`Project '${name}' not found. Available projects: ${names}`,
+			);
 		}
 		return project;
 	}

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CredentialStore } from "../infra/credentials.js";
 import { BackendFactory } from "./backend.factory.js";
 import { DecisionService } from "./decision.service.js";
 import { EmbeddingService } from "./embedding.service.js";
@@ -9,7 +10,6 @@ import type {
 	IProjectRepo,
 	Project,
 } from "./types.js";
-import { CredentialStore } from "../infra/credentials.js";
 
 function createMockProjectRepo(projects: Project[] = []): IProjectRepo {
 	return {
@@ -63,7 +63,11 @@ describe("DecisionService", () => {
 		embeddingClient = createMockEmbeddingClient();
 		embeddingService = new EmbeddingService(embeddingClient);
 		credentialStore = new CredentialStore("/tmp/fake-credentials.json");
-		backendFactory = new BackendFactory(decisionRepo, credentialStore, embeddingService);
+		backendFactory = new BackendFactory(
+			decisionRepo,
+			credentialStore,
+			embeddingService,
+		);
 		service = new DecisionService(projectRepo, backendFactory);
 	});
 
@@ -119,7 +123,11 @@ describe("DecisionService", () => {
 
 		it("shows 'none' when no projects exist", async () => {
 			projectRepo = createMockProjectRepo([]);
-			backendFactory = new BackendFactory(decisionRepo, credentialStore, embeddingService);
+			backendFactory = new BackendFactory(
+				decisionRepo,
+				credentialStore,
+				embeddingService,
+			);
 			service = new DecisionService(projectRepo, backendFactory);
 
 			await expect(

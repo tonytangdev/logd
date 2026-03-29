@@ -54,7 +54,9 @@ export function createDatabase(dbPath: string): Database.Database {
 		);
 	`);
 
-	const projectColumns = db.pragma("table_info(projects)") as { name: string }[];
+	const projectColumns = db.pragma("table_info(projects)") as {
+		name: string;
+	}[];
 	const columnNames = projectColumns.map((c) => c.name);
 	if (!columnNames.includes("server")) {
 		db.exec("ALTER TABLE projects ADD COLUMN server TEXT DEFAULT NULL");
