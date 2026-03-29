@@ -24,6 +24,8 @@ describe("DecisionRepo", () => {
 			name: "testproject",
 			description: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
+			server: null,
+			team: null,
 		});
 	});
 
@@ -165,6 +167,8 @@ describe("DecisionRepo", () => {
 			name: "other",
 			description: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
+			server: null,
+			team: null,
 		});
 
 		repo.create(
@@ -238,6 +242,8 @@ describe("DecisionRepo", () => {
 			name: "other",
 			description: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
+			server: null,
+			team: null,
 		});
 
 		repo.create(
