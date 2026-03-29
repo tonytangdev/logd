@@ -24,7 +24,6 @@ COPY --from=build /app/packages/shared/dist/ packages/shared/dist/
 COPY --from=build /app/packages/server/package.json packages/server/
 COPY --from=build /app/packages/server/dist/ packages/server/dist/
 COPY --from=build /app/node_modules/ node_modules/
-COPY --from=build /app/packages/shared/node_modules/ packages/shared/node_modules/
 COPY --from=build /app/packages/server/node_modules/ packages/server/node_modules/
 
 EXPOSE 3000
