@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/tonytangdev/logd/compare/logd-v1.1.0...logd-v1.1.1) (2026-03-29)
+
+
+### Bug Fixes
+
+* test automated publish ([0ba8dba](https://github.com/tonytangdev/logd/commit/0ba8dba21a189f751194c13330e5b7ce95f8f6d4))
+* trigger release ([b298df3](https://github.com/tonytangdev/logd/commit/b298df383bd4cfc631bd0afe0b478c7d41f2f87d))
+
 ## [1.1.0](https://github.com/tonytangdev/logd/compare/v1.0.3...v1.1.0) (2026-03-28)
 
 

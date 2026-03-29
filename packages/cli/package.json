@@ -1,6 +1,6 @@
 {
 	"name": "@tonytangdev/logd",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "CLI tool & MCP server for logging and semantically searching decisions using local LLM embeddings",
 	"main": "dist/src/cli/index.js",
 	"files": [
