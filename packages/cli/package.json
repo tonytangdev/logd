@@ -1,0 +1,57 @@
+{
+  "name": "@tonytangdev/logd",
+  "version": "1.1.0",
+  "description": "CLI tool & MCP server for logging and semantically searching decisions using local LLM embeddings",
+  "main": "dist/src/cli/index.js",
+  "files": [
+    "dist/bin/",
+    "dist/src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "format": "biome format --write .",
+    "format:check": "biome check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc"
+  },
+  "bin": {
+    "logd": "./dist/bin/logd.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tonytangdev/logd.git"
+  },
+  "keywords": [
+    "cli",
+    "decisions",
+    "embeddings",
+    "sqlite",
+    "mcp",
+    "ollama",
+    "semantic-search"
+  ],
+  "author": "Tony Tang",
+  "license": "MIT WITH Commons-Clause",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tonytangdev/logd/issues"
+  },
+  "homepage": "https://github.com/tonytangdev/logd#readme",
+  "dependencies": {
+    "@logd/shared": "*",
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "better-sqlite3": "^12.8.0",
+    "commander": "^14.0.3",
+    "sqlite-vec": "^0.1.7",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.5.0",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  }
+}
