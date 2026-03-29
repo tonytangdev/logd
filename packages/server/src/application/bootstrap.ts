@@ -1,34 +1,28 @@
-import type Database from "better-sqlite3";
-import type { SqliteTeamRepo } from "../adapters/persistence/sqlite.team.repo.js";
-import type { SqliteUserRepo } from "../adapters/persistence/sqlite.user.repo.js";
+import { isNull } from "drizzle-orm";
+import * as schema from "../adapters/persistence/schema.js";
+import type { Database } from "../adapters/persistence/database.js";
 import { buildTeam } from "../domain/team.js";
 import { buildUser } from "../domain/user.js";
+import type { TeamRepository } from "../ports/team.repository.js";
+import type { UserRepository } from "../ports/user.repository.js";
 import type { TokenService } from "./token.service.js";
 
 export interface BootstrapDeps {
-	db: Database.Database;
-	userRepo: SqliteUserRepo;
-	teamRepo: SqliteTeamRepo;
+	db: Database;
+	userRepo: UserRepository;
+	teamRepo: TeamRepository;
 	tokenService: TokenService;
 	apiToken: string | undefined;
 }
 
-export function bootstrap(deps: BootstrapDeps): void {
+export async function bootstrap(deps: BootstrapDeps): Promise<void> {
 	const { db, userRepo, teamRepo, tokenService, apiToken } = deps;
-
-	if (!userRepo.isEmpty() || !apiToken) return;
-
+	if (!(await userRepo.isEmpty()) || !apiToken) return;
 	const admin = buildUser("admin@localhost", "Admin");
-	userRepo.create(admin);
-
+	await userRepo.create(admin);
 	const team = buildTeam("default");
-	teamRepo.create(team);
-
-	teamRepo.addMember(team.id, admin.id, "admin");
-
-	tokenService.createWithRaw(admin.id, "bootstrap", apiToken);
-
-	db.prepare("UPDATE projects SET team_id = ? WHERE team_id IS NULL").run(
-		team.id,
-	);
+	await teamRepo.create(team);
+	await teamRepo.addMember(team.id, admin.id, "admin");
+	await tokenService.createWithRaw(admin.id, "bootstrap", apiToken);
+	await db.update(schema.projects).set({ teamId: team.id }).where(isNull(schema.projects.teamId));
 }

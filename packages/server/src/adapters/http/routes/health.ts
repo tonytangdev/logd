@@ -1,8 +1,8 @@
-import type Database from "better-sqlite3";
 import { Hono } from "hono";
+import type { Database } from "../../persistence/database.js";
 
 export interface HealthDeps {
-	db: Database.Database;
+	db: Database;
 	ollamaUrl: string;
 }
 
@@ -18,7 +18,7 @@ export function healthRoutes(deps: HealthDeps): Hono {
 		let ollamaStatus = "ok";
 
 		try {
-			deps.db.prepare("SELECT 1").get();
+			await deps.db.execute("SELECT 1");
 		} catch {
 			dbStatus = "error";
 		}
