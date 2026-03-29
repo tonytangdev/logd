@@ -1,5 +1,13 @@
 import { Hono } from "hono";
 import type { DecisionService } from "../../application/decision.service.js";
+
+export type AppEnv = {
+	Variables: {
+		userId: string;
+		teamId: string;
+		role: "admin" | "member";
+	};
+};
 import type { ProjectService } from "../../application/project.service.js";
 import { authMiddleware } from "./middleware/auth.js";
 import { authRoutes } from "./routes/auth.js";
