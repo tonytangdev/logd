@@ -1,4 +1,4 @@
 export interface ProjectRepository {
-	create(name: string, description: string | null, teamId: string): void;
-	findByName(name: string): boolean;
+	create(name: string, description: string | null, teamId: string): Promise<void>;
+	findByName(name: string): Promise<boolean>;
 }
