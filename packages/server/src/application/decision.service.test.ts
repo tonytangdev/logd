@@ -9,16 +9,16 @@ const fakeEmbedding = [0.1, 0.2, 0.3];
 function mockDecisionRepo(): DecisionRepository {
 	const store = new Map<string, Decision>();
 	return {
-		create: vi.fn((d: Decision) => {
+		create: vi.fn(async (d: Decision) => {
 			store.set(d.id, d);
 		}),
-		findById: vi.fn((id: string) => store.get(id) ?? null),
-		update: vi.fn(),
-		delete: vi.fn((id: string) => {
+		findById: vi.fn(async (id: string) => store.get(id) ?? null),
+		update: vi.fn(async () => {}),
+		delete: vi.fn(async (id: string) => {
 			store.delete(id);
 		}),
-		list: vi.fn(() => [...store.values()]),
-		searchByVector: vi.fn(() => []),
+		list: vi.fn(async () => [...store.values()]),
+		searchByVector: vi.fn(async () => []),
 	};
 }
 
@@ -47,12 +47,12 @@ describe("DecisionService", () => {
 
 	it("get returns decision by id", async () => {
 		const created = await service.create({ project: "proj", title: "Test" });
-		const found = service.get(created.id);
+		const found = await service.get(created.id);
 		expect(found).not.toBeNull();
 	});
 
-	it("get returns null for missing", () => {
-		expect(service.get("nope")).toBeNull();
+	it("get returns null for missing", async () => {
+		expect(await service.get("nope")).toBeNull();
 	});
 
 	it("update calls repo.update with new embedding", async () => {
@@ -68,18 +68,18 @@ describe("DecisionService", () => {
 		);
 	});
 
-	it("delete calls repo.delete", () => {
-		service.delete("d-1");
+	it("delete calls repo.delete", async () => {
+		await service.delete("d-1");
 		expect(repo.delete).toHaveBeenCalledWith("d-1");
 	});
 
-	it("list delegates to repo", () => {
-		service.list({ project: "proj" });
+	it("list delegates to repo", async () => {
+		await service.list({ project: "proj" });
 		expect(repo.list).toHaveBeenCalledWith({ project: "proj" });
 	});
 
-	it("list passes teamId to repo", () => {
-		service.list({ teamId: "t-1" });
+	it("list passes teamId to repo", async () => {
+		await service.list({ teamId: "t-1" });
 		expect(repo.list).toHaveBeenCalledWith({ teamId: "t-1" });
 	});
 
@@ -116,7 +116,7 @@ describe("DecisionService", () => {
 				score: 0.3,
 			},
 		];
-		(repo.searchByVector as ReturnType<typeof vi.fn>).mockReturnValue(
+		(repo.searchByVector as ReturnType<typeof vi.fn>).mockResolvedValue(
 			mockResults,
 		);
 

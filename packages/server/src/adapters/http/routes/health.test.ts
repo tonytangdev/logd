@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { Database } from "../../persistence/database.js";
 import { healthRoutes } from "./health.js";
 
 describe("health routes", () => {
@@ -10,7 +10,7 @@ describe("health routes", () => {
 			app.route(
 				"/",
 				healthRoutes({
-					db: null as unknown as Database.Database,
+					db: null as unknown as Database,
 					ollamaUrl: "",
 				}),
 			);
@@ -28,8 +28,8 @@ describe("health routes", () => {
 
 		it("returns 200 when db and ollama are healthy", async () => {
 			const mockDb = {
-				prepare: vi.fn(() => ({ get: vi.fn(() => ({ 1: 1 })) })),
-			} as unknown as Database.Database;
+				execute: vi.fn(async () => ({})),
+			} as unknown as Database;
 			vi.stubGlobal(
 				"fetch",
 				vi.fn(async () => new Response("{}", { status: 200 })),
@@ -49,10 +49,10 @@ describe("health routes", () => {
 
 		it("returns 503 when db fails", async () => {
 			const mockDb = {
-				prepare: vi.fn(() => {
+				execute: vi.fn(async () => {
 					throw new Error("db down");
 				}),
-			} as unknown as Database.Database;
+			} as unknown as Database;
 			vi.stubGlobal(
 				"fetch",
 				vi.fn(async () => new Response("{}", { status: 200 })),
@@ -74,8 +74,8 @@ describe("health routes", () => {
 
 		it("returns 503 when ollama returns non-2xx", async () => {
 			const mockDb = {
-				prepare: vi.fn(() => ({ get: vi.fn(() => ({ 1: 1 })) })),
-			} as unknown as Database.Database;
+				execute: vi.fn(async () => ({})),
+			} as unknown as Database;
 			vi.stubGlobal(
 				"fetch",
 				vi.fn(async () => new Response("error", { status: 500 })),
@@ -97,8 +97,8 @@ describe("health routes", () => {
 
 		it("returns 503 when ollama fails", async () => {
 			const mockDb = {
-				prepare: vi.fn(() => ({ get: vi.fn(() => ({ 1: 1 })) })),
-			} as unknown as Database.Database;
+				execute: vi.fn(async () => ({})),
+			} as unknown as Database;
 			vi.stubGlobal(
 				"fetch",
 				vi.fn(async () => {

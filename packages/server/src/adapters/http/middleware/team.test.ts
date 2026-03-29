@@ -8,7 +8,7 @@ function mockTeamService(
 	membership: { teamId: string; role: "admin" | "member" } | null,
 ) {
 	return {
-		getMembership: vi.fn(() => membership),
+		getMembership: vi.fn(async () => membership),
 	} as Pick<TeamService, "getMembership">;
 }
 

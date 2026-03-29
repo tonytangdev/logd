@@ -1,12 +1,13 @@
+import type { PGlite } from "@electric-sql/pglite";
 import { Hono } from "hono";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { bootstrap } from "../../../application/bootstrap.js";
 import { TeamService } from "../../../application/team.service.js";
 import { TokenService } from "../../../application/token.service.js";
-import { createInMemoryDatabase } from "../../persistence/database.js";
-import { SqliteTeamRepo } from "../../persistence/sqlite.team.repo.js";
-import { SqliteTokenRepo } from "../../persistence/sqlite.token.repo.js";
-import { SqliteUserRepo } from "../../persistence/sqlite.user.repo.js";
+import { setupTestDb } from "../../../test-utils.js";
+import { PgTeamRepo } from "../../persistence/pg.team.repo.js";
+import { PgTokenRepo } from "../../persistence/pg.token.repo.js";
+import { PgUserRepo } from "../../persistence/pg.user.repo.js";
 import type { AppEnv } from "../app.js";
 import { createAuthMiddleware } from "../middleware/auth.js";
 import { teamMiddleware } from "../middleware/team.js";
@@ -14,15 +15,28 @@ import { authRoutes } from "./auth.js";
 
 const API_TOKEN = "test-admin-token";
 
-function setup() {
-	const db = createInMemoryDatabase();
-	const userRepo = new SqliteUserRepo(db);
-	const teamRepo = new SqliteTeamRepo(db);
-	const tokenRepo = new SqliteTokenRepo(db);
+let currentPglite: PGlite;
+
+afterEach(async () => {
+	await currentPglite?.close();
+});
+
+async function setup() {
+	const { db, pglite } = await setupTestDb();
+	currentPglite = pglite;
+	const userRepo = new PgUserRepo(db);
+	const teamRepo = new PgTeamRepo(db);
+	const tokenRepo = new PgTokenRepo(db);
 	const tokenService = new TokenService(tokenRepo);
 	const teamService = new TeamService(teamRepo);
 
-	bootstrap({ db, userRepo, teamRepo, tokenService, apiToken: API_TOKEN });
+	await bootstrap({
+		db,
+		userRepo,
+		teamRepo,
+		tokenService,
+		apiToken: API_TOKEN,
+	});
 
 	const app = new Hono<AppEnv>();
 	app.use("*", createAuthMiddleware(tokenService));
@@ -33,7 +47,7 @@ function setup() {
 
 describe("GET /auth/validate", () => {
 	it("returns 200 with valid token + X-Team", async () => {
-		const app = setup();
+		const app = await setup();
 		const res = await app.request("/auth/validate", {
 			headers: {
 				Authorization: `Bearer ${API_TOKEN}`,
@@ -44,13 +58,13 @@ describe("GET /auth/validate", () => {
 	});
 
 	it("returns 401 without token", async () => {
-		const app = setup();
+		const app = await setup();
 		const res = await app.request("/auth/validate");
 		expect(res.status).toBe(401);
 	});
 
 	it("returns 403 with valid token but wrong team", async () => {
-		const app = setup();
+		const app = await setup();
 		const res = await app.request("/auth/validate", {
 			headers: {
 				Authorization: `Bearer ${API_TOKEN}`,

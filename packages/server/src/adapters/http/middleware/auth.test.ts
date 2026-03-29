@@ -7,8 +7,8 @@ function mockTokenService(
 	valid = true,
 ): Pick<TokenService, "authenticate" | "touch"> {
 	return {
-		authenticate: vi.fn(() => (valid ? { id: "u-1" } : null)),
-		touch: vi.fn(),
+		authenticate: vi.fn(async () => (valid ? { id: "u-1" } : null)),
+		touch: vi.fn(async () => {}),
 	};
 }
 
