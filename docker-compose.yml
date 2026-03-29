@@ -1,0 +1,31 @@
+services:
+  server:
+    build: .
+    ports:
+      - "${LOGD_PORT:-3000}:3000"
+    volumes:
+      - logd-data:/data
+    environment:
+      LOGD_DB_PATH: /data/logd-server.db
+      LOGD_API_TOKEN: ${LOGD_API_TOKEN}
+      LOGD_OLLAMA_URL: ${LOGD_OLLAMA_URL:-http://ollama:11434}
+      LOGD_MODEL: ${LOGD_MODEL:-qwen3-embedding:0.6b}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)throw 1})"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama
+    profiles: ["full"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  logd-data:
+  ollama-data:
