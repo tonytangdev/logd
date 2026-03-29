@@ -11,10 +11,13 @@ export function registerProjectCommand(
 		.command("create <name>")
 		.description("Create a new project")
 		.option("-d, --description <desc>", "Project description")
-		.action((name: string, opts: { description?: string }) => {
+		.option("--server <url>", "Remote server URL")
+		.option("--team <team>", "Team name on the remote server")
+		.action((name: string, opts: { description?: string; server?: string; team?: string }) => {
 			try {
-				const p = projectService.create(name, opts.description);
-				console.log(`Created project: ${p.name}`);
+				const p = projectService.create(name, opts.description, opts.server, opts.team);
+				const remote = p.server ? ` (remote: ${p.server}, team: ${p.team})` : "";
+				console.log(`Created project: ${p.name}${remote}`);
 			} catch (e) {
 				console.error(`Error: ${(e as Error).message}`);
 				process.exit(1);
@@ -33,7 +36,8 @@ export function registerProjectCommand(
 				}
 				for (const p of projects) {
 					const desc = p.description ? ` - ${p.description}` : "";
-					console.log(`${p.name}${desc}`);
+					const remote = p.server ? ` [${p.server} / ${p.team}]` : "";
+					console.log(`${p.name}${desc}${remote}`);
 				}
 			} catch (e) {
 				console.error(`Error: ${(e as Error).message}`);
