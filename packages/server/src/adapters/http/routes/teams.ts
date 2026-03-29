@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import type { AppEnv } from "../app.js";
+import { ConflictError } from "../../../application/project.service.js";
 import type { TeamService } from "../../../application/team.service.js";
 import { BadRequestError } from "../../../application/team.service.js";
-import { ConflictError } from "../../../application/project.service.js";
+import type { AppEnv } from "../app.js";
 import { adminOnly } from "../middleware/role.js";
 
 export function teamRoutes(teamService: TeamService): Hono<AppEnv> {
@@ -51,7 +51,11 @@ export function teamRoutes(teamService: TeamService): Hono<AppEnv> {
 	router.patch("/:id/members/:userId", adminOnly(), async (c) => {
 		const body = await c.req.json();
 		if (!body.role) return c.text("role is required", 400);
-		teamService.updateMemberRole(c.req.param("id"), c.req.param("userId"), body.role);
+		teamService.updateMemberRole(
+			c.req.param("id"),
+			c.req.param("userId"),
+			body.role,
+		);
 		return c.body(null, 204);
 	});
 

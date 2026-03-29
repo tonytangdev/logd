@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import type { AppEnv } from "../app.js";
 import type { TokenService } from "../../../application/token.service.js";
+import type { AppEnv } from "../app.js";
 
 export function tokenRoutes(tokenService: TokenService): Hono<AppEnv> {
 	const router = new Hono<AppEnv>();

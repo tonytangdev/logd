@@ -7,12 +7,12 @@ import { SqliteProjectRepo } from "./adapters/persistence/sqlite.project.repo.js
 import { SqliteTeamRepo } from "./adapters/persistence/sqlite.team.repo.js";
 import { SqliteTokenRepo } from "./adapters/persistence/sqlite.token.repo.js";
 import { SqliteUserRepo } from "./adapters/persistence/sqlite.user.repo.js";
+import { bootstrap } from "./application/bootstrap.js";
 import { DecisionService } from "./application/decision.service.js";
 import { ProjectService } from "./application/project.service.js";
 import { TeamService } from "./application/team.service.js";
 import { TokenService } from "./application/token.service.js";
 import { UserService } from "./application/user.service.js";
-import { bootstrap } from "./application/bootstrap.js";
 import { loadConfig } from "./config.js";
 
 const config = loadConfig();

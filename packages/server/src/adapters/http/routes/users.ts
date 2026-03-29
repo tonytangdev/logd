@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import type { AppEnv } from "../app.js";
-import type { UserService } from "../../../application/user.service.js";
 import { ConflictError } from "../../../application/project.service.js";
+import type { UserService } from "../../../application/user.service.js";
+import type { AppEnv } from "../app.js";
 import { adminOnly } from "../middleware/role.js";
 
 export function userRoutes(userService: UserService): Hono<AppEnv> {

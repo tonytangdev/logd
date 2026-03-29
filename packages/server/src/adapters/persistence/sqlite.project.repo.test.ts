@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
 import type Database from "better-sqlite3";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createInMemoryDatabase } from "./database.js";
 import { SqliteProjectRepo } from "./sqlite.project.repo.js";
 
@@ -9,7 +9,9 @@ describe("SqliteProjectRepo", () => {
 
 	beforeEach(() => {
 		db = createInMemoryDatabase();
-		db.exec("INSERT INTO teams (id, name, created_at) VALUES ('t-1', 'acme', '2026-01-01')");
+		db.exec(
+			"INSERT INTO teams (id, name, created_at) VALUES ('t-1', 'acme', '2026-01-01')",
+		);
 		repo = new SqliteProjectRepo(db);
 	});
 

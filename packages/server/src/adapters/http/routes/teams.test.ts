@@ -1,14 +1,14 @@
-import { describe, it, expect } from "vitest";
 import { Hono } from "hono";
-import type { AppEnv } from "../app.js";
+import { describe, expect, it } from "vitest";
+import { bootstrap } from "../../../application/bootstrap.js";
+import { TeamService } from "../../../application/team.service.js";
+import { TokenService } from "../../../application/token.service.js";
+import { UserService } from "../../../application/user.service.js";
 import { createInMemoryDatabase } from "../../persistence/database.js";
-import { SqliteUserRepo } from "../../persistence/sqlite.user.repo.js";
 import { SqliteTeamRepo } from "../../persistence/sqlite.team.repo.js";
 import { SqliteTokenRepo } from "../../persistence/sqlite.token.repo.js";
-import { TokenService } from "../../../application/token.service.js";
-import { TeamService } from "../../../application/team.service.js";
-import { UserService } from "../../../application/user.service.js";
-import { bootstrap } from "../../../application/bootstrap.js";
+import { SqliteUserRepo } from "../../persistence/sqlite.user.repo.js";
+import type { AppEnv } from "../app.js";
 import { createAuthMiddleware } from "../middleware/auth.js";
 import { teamMiddleware } from "../middleware/team.js";
 import { teamRoutes } from "./teams.js";
@@ -22,7 +22,7 @@ function setup() {
 	const tokenRepo = new SqliteTokenRepo(db);
 	const tokenService = new TokenService(tokenRepo);
 	const teamService = new TeamService(teamRepo);
-	const userService = new UserService(userRepo, tokenService);
+	const _userService = new UserService(userRepo, tokenService);
 
 	bootstrap({ db, userRepo, teamRepo, tokenService, apiToken: API_TOKEN });
 
@@ -105,7 +105,9 @@ describe("team routes", () => {
 		db.exec(
 			"INSERT INTO users (id, email, name, created_at) VALUES ('u-2', 'other@test.com', 'Other', '2026-01-01')",
 		);
-		const team = db.prepare("SELECT id FROM teams WHERE name = 'default'").get() as { id: string };
+		const team = db
+			.prepare("SELECT id FROM teams WHERE name = 'default'")
+			.get() as { id: string };
 		const res = await app.request(`/teams/${team.id}/members`, {
 			method: "POST",
 			headers,
@@ -119,7 +121,9 @@ describe("team routes", () => {
 		db.exec(
 			"INSERT INTO users (id, email, name, created_at) VALUES ('u-2', 'other@test.com', 'Other', '2026-01-01')",
 		);
-		const team = db.prepare("SELECT id FROM teams WHERE name = 'default'").get() as { id: string };
+		const team = db
+			.prepare("SELECT id FROM teams WHERE name = 'default'")
+			.get() as { id: string };
 		await app.request(`/teams/${team.id}/members`, {
 			method: "POST",
 			headers,
@@ -137,7 +141,9 @@ describe("team routes", () => {
 		db.exec(
 			"INSERT INTO users (id, email, name, created_at) VALUES ('u-2', 'other@test.com', 'Other', '2026-01-01')",
 		);
-		const team = db.prepare("SELECT id FROM teams WHERE name = 'default'").get() as { id: string };
+		const team = db
+			.prepare("SELECT id FROM teams WHERE name = 'default'")
+			.get() as { id: string };
 		await app.request(`/teams/${team.id}/members`, {
 			method: "POST",
 			headers,

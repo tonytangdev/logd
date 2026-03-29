@@ -1,9 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
-import { createAuthMiddleware } from "./auth.js";
+import { describe, expect, it, vi } from "vitest";
 import type { TokenService } from "../../../application/token.service.js";
+import { createAuthMiddleware } from "./auth.js";
 
-function mockTokenService(valid = true): Pick<TokenService, "authenticate" | "touch"> {
+function mockTokenService(
+	valid = true,
+): Pick<TokenService, "authenticate" | "touch"> {
 	return {
 		authenticate: vi.fn(() => (valid ? { id: "u-1" } : null)),
 		touch: vi.fn(),

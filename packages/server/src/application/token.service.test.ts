@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { Token } from "@logd/shared";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TokenRepository } from "../ports/token.repository.js";
 import { TokenService } from "./token.service.js";
 

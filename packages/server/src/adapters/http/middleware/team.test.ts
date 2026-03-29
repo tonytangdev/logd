@@ -1,10 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
-import { teamMiddleware } from "./team.js";
+import { describe, expect, it, vi } from "vitest";
 import type { TeamService } from "../../../application/team.service.js";
 import type { AppEnv } from "../app.js";
+import { teamMiddleware } from "./team.js";
 
-function mockTeamService(membership: { teamId: string; role: "admin" | "member" } | null) {
+function mockTeamService(
+	membership: { teamId: string; role: "admin" | "member" } | null,
+) {
 	return {
 		getMembership: vi.fn(() => membership),
 	} as Pick<TeamService, "getMembership">;
@@ -17,7 +19,9 @@ function makeApp(teamSvc: Pick<TeamService, "getMembership">) {
 		await next();
 	});
 	app.use("*", teamMiddleware(teamSvc as any));
-	app.get("/test", (c) => c.json({ teamId: c.get("teamId"), role: c.get("role") }));
+	app.get("/test", (c) =>
+		c.json({ teamId: c.get("teamId"), role: c.get("role") }),
+	);
 	return app;
 }
 

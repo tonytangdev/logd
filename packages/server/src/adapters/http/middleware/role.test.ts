@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
 import { Hono } from "hono";
-import { adminOnly } from "./role.js";
+import { describe, expect, it } from "vitest";
 import type { AppEnv } from "../app.js";
+import { adminOnly } from "./role.js";
 
 function makeApp(role: "admin" | "member") {
 	const app = new Hono<AppEnv>();

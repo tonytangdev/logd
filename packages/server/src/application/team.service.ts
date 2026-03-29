@@ -38,7 +38,10 @@ export class TeamService {
 		this.repo.updateMemberRole(teamId, userId, role);
 	}
 
-	getMembership(userId: string, teamName: string): { teamId: string; role: TeamRole } | null {
+	getMembership(
+		userId: string,
+		teamName: string,
+	): { teamId: string; role: TeamRole } | null {
 		return this.repo.getMembership(userId, teamName);
 	}
 

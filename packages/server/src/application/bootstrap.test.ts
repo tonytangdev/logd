@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import type Database from "better-sqlite3";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createInMemoryDatabase } from "../adapters/persistence/database.js";
-import { SqliteUserRepo } from "../adapters/persistence/sqlite.user.repo.js";
 import { SqliteTeamRepo } from "../adapters/persistence/sqlite.team.repo.js";
 import { SqliteTokenRepo } from "../adapters/persistence/sqlite.token.repo.js";
-import { TokenService } from "./token.service.js";
-import { bootstrap } from "./bootstrap.js";
+import { SqliteUserRepo } from "../adapters/persistence/sqlite.user.repo.js";
 import { hashToken } from "../domain/token.js";
+import { bootstrap } from "./bootstrap.js";
+import { TokenService } from "./token.service.js";
 
 describe("bootstrap", () => {
 	let db: Database.Database;
@@ -33,7 +33,7 @@ describe("bootstrap", () => {
 		const team = teamRepo.findByName("default");
 		expect(team).not.toBeNull();
 
-		const membership = teamRepo.getMembership(admin!.id, "default");
+		const membership = teamRepo.getMembership(admin?.id, "default");
 		expect(membership?.role).toBe("admin");
 
 		const tokenResult = tokenRepo.findByHash(hashToken("my-secret"));
@@ -47,17 +47,23 @@ describe("bootstrap", () => {
 
 		bootstrap({ db, userRepo, teamRepo, tokenService, apiToken: "my-secret" });
 
-		const row = db.prepare("SELECT team_id FROM projects WHERE id = 'p-1'").get() as { team_id: string };
+		const row = db
+			.prepare("SELECT team_id FROM projects WHERE id = 'p-1'")
+			.get() as { team_id: string };
 		const team = teamRepo.findByName("default");
-		expect(row.team_id).toBe(team!.id);
+		expect(row.team_id).toBe(team?.id);
 	});
 
 	it("skips seed when users table is not empty", () => {
 		bootstrap({ db, userRepo, teamRepo, tokenService, apiToken: "secret1" });
-		const userCount1 = db.prepare("SELECT COUNT(*) as c FROM users").get() as { c: number };
+		const userCount1 = db.prepare("SELECT COUNT(*) as c FROM users").get() as {
+			c: number;
+		};
 
 		bootstrap({ db, userRepo, teamRepo, tokenService, apiToken: "secret2" });
-		const userCount2 = db.prepare("SELECT COUNT(*) as c FROM users").get() as { c: number };
+		const userCount2 = db.prepare("SELECT COUNT(*) as c FROM users").get() as {
+			c: number;
+		};
 
 		expect(userCount1.c).toBe(userCount2.c);
 	});

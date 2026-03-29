@@ -11,6 +11,9 @@ export interface TeamRepository {
 	addMember(teamId: string, userId: string, role: TeamRole): void;
 	removeMember(teamId: string, userId: string): void;
 	updateMemberRole(teamId: string, userId: string, role: TeamRole): void;
-	getMembership(userId: string, teamName: string): { teamId: string; role: TeamRole } | null;
+	getMembership(
+		userId: string,
+		teamName: string,
+	): { teamId: string; role: TeamRole } | null;
 	listMembers(teamId: string): TeamMember[];
 }

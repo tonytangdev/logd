@@ -1,8 +1,8 @@
 import type Database from "better-sqlite3";
-import { buildTeam } from "../domain/team.js";
-import { buildUser } from "../domain/user.js";
 import type { SqliteTeamRepo } from "../adapters/persistence/sqlite.team.repo.js";
 import type { SqliteUserRepo } from "../adapters/persistence/sqlite.user.repo.js";
+import { buildTeam } from "../domain/team.js";
+import { buildUser } from "../domain/user.js";
 import type { TokenService } from "./token.service.js";
 
 export interface BootstrapDeps {
@@ -28,5 +28,7 @@ export function bootstrap(deps: BootstrapDeps): void {
 
 	tokenService.createWithRaw(admin.id, "bootstrap", apiToken);
 
-	db.prepare("UPDATE projects SET team_id = ? WHERE team_id IS NULL").run(team.id);
+	db.prepare("UPDATE projects SET team_id = ? WHERE team_id IS NULL").run(
+		team.id,
+	);
 }

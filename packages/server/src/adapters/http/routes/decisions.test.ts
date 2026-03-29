@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { describe, expect, it, vi } from "vitest";
-import type { AppEnv } from "../app.js";
 import { bootstrap } from "../../../application/bootstrap.js";
 import { DecisionService } from "../../../application/decision.service.js";
 import { ProjectService } from "../../../application/project.service.js";
@@ -13,13 +12,16 @@ import { SqliteProjectRepo } from "../../persistence/sqlite.project.repo.js";
 import { SqliteTeamRepo } from "../../persistence/sqlite.team.repo.js";
 import { SqliteTokenRepo } from "../../persistence/sqlite.token.repo.js";
 import { SqliteUserRepo } from "../../persistence/sqlite.user.repo.js";
+import type { AppEnv } from "../app.js";
 import { createAuthMiddleware } from "../middleware/auth.js";
 import { teamMiddleware } from "../middleware/team.js";
 import { decisionRoutes } from "./decisions.js";
 
 const API_TOKEN = "test-admin-token";
 const fakeEmbedding = Array.from({ length: 1024 }, () => 0.1);
-const mockEmbedding: EmbeddingProvider = { embed: vi.fn(async () => fakeEmbedding) };
+const mockEmbedding: EmbeddingProvider = {
+	embed: vi.fn(async () => fakeEmbedding),
+};
 
 const headers = {
 	Authorization: `Bearer ${API_TOKEN}`,
@@ -200,7 +202,10 @@ describe("decision routes", () => {
 			const otherTeam = buildTeam("other");
 			teamRepo.create(otherTeam);
 			projectService.create("other-proj", null, otherTeam.id);
-			decisionService.create({ project: "other-proj", title: "Other team decision" });
+			decisionService.create({
+				project: "other-proj",
+				title: "Other team decision",
+			});
 
 			const app = new Hono<AppEnv>();
 			app.use("*", createAuthMiddleware(tokenService));
