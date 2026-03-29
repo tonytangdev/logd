@@ -82,7 +82,9 @@ describe("token routes", () => {
 		await createRes.json();
 		const listRes = await app.request("/tokens", { headers });
 		const tokens = await listRes.json();
-		const newToken = tokens.find((t: any) => t.name === "temp");
+		const newToken = tokens.find(
+			(t: { id: string; name: string }) => t.name === "temp",
+		);
 		const res = await app.request(`/tokens/${newToken.id}`, {
 			method: "DELETE",
 			headers,

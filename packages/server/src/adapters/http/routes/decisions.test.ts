@@ -43,6 +43,7 @@ function setup() {
 
 	bootstrap({ db, userRepo, teamRepo, tokenService, apiToken: API_TOKEN });
 
+	// biome-ignore lint/style/noNonNullAssertion: bootstrap guarantees team exists
 	const defaultTeam = teamRepo.findByName("default")!;
 	projectService.create("proj", null, defaultTeam.id);
 
@@ -194,6 +195,7 @@ describe("decision routes", () => {
 
 			bootstrap({ db, userRepo, teamRepo, tokenService, apiToken: API_TOKEN });
 
+			// biome-ignore lint/style/noNonNullAssertion: bootstrap guarantees team exists
 			const defaultTeam = teamRepo.findByName("default")!;
 			projectService.create("proj", null, defaultTeam.id);
 

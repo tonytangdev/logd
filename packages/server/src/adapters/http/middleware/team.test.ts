@@ -18,7 +18,7 @@ function makeApp(teamSvc: Pick<TeamService, "getMembership">) {
 		c.set("userId", "u-1");
 		await next();
 	});
-	app.use("*", teamMiddleware(teamSvc as any));
+	app.use("*", teamMiddleware(teamSvc as TeamService));
 	app.get("/test", (c) =>
 		c.json({ teamId: c.get("teamId"), role: c.get("role") }),
 	);

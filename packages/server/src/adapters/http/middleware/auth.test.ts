@@ -14,7 +14,7 @@ function mockTokenService(
 
 function makeApp(tokenSvc: Pick<TokenService, "authenticate" | "touch">) {
 	const app = new Hono();
-	app.use("*", createAuthMiddleware(tokenSvc as any));
+	app.use("*", createAuthMiddleware(tokenSvc as TokenService));
 	app.get("/test", (c) => c.json({ userId: c.get("userId") }));
 	return app;
 }

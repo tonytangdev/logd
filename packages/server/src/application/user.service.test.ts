@@ -45,7 +45,7 @@ describe("UserService", () => {
 	beforeEach(() => {
 		repo = mockUserRepo();
 		tokenSvc = mockTokenService();
-		service = new UserService(repo, tokenSvc as any);
+		service = new UserService(repo, tokenSvc as TokenService);
 	});
 
 	it("create returns user + raw token", () => {
