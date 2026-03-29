@@ -1,8 +1,8 @@
 {
-  "packages": {
-    "packages/cli": {
-      "release-type": "node",
-      "package-name": "@tonytangdev/logd"
-    }
-  }
+	"packages": {
+		"packages/cli": {
+			"release-type": "node",
+			"package-name": "@tonytangdev/logd"
+		}
+	}
 }

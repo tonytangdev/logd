@@ -1,6 +1,6 @@
 export {
-	DECISION_STATUSES,
 	type CreateDecisionInput,
+	DECISION_STATUSES,
 	type Decision,
 	type DecisionStatus,
 	type Project,

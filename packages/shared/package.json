@@ -1,21 +1,21 @@
 {
-  "name": "@logd/shared",
-  "version": "1.0.0",
-  "private": true,
-  "type": "commonjs",
-  "main": "dist/types.js",
-  "types": "dist/types.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/types.d.ts",
-      "default": "./dist/types.js"
-    }
-  },
-  "scripts": {
-    "build": "tsc"
-  },
-  "devDependencies": {
-    "@types/node": "^25.5.0",
-    "typescript": "^6.0.2"
-  }
+	"name": "@logd/shared",
+	"version": "1.0.0",
+	"private": true,
+	"type": "commonjs",
+	"main": "dist/types.js",
+	"types": "dist/types.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/types.d.ts",
+			"default": "./dist/types.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc"
+	},
+	"devDependencies": {
+		"@types/node": "^25.5.0",
+		"typescript": "^6.0.2"
+	}
 }

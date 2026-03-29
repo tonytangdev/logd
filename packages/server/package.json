@@ -1,13 +1,13 @@
 {
-  "name": "@logd/server",
-  "version": "0.0.1",
-  "private": true,
-  "type": "commonjs",
-  "dependencies": {
-    "@logd/shared": "*"
-  },
-  "devDependencies": {
-    "@types/node": "^25.5.0",
-    "typescript": "^6.0.2"
-  }
+	"name": "@logd/server",
+	"version": "0.0.1",
+	"private": true,
+	"type": "commonjs",
+	"dependencies": {
+		"@logd/shared": "*"
+	},
+	"devDependencies": {
+		"@types/node": "^25.5.0",
+		"typescript": "^6.0.2"
+	}
 }
