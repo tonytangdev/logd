@@ -6,9 +6,11 @@
 
 logd is local-first (SQLite + Ollama embeddings). This design adds optional remote server support so teams can share decisions. The project is the routing unit — each project is either local or linked to a remote server/team.
 
-Two deployment scenarios:
-- **Self-hosted**: team runs their own logd server
-- **SaaS**: logd.dev hosts multiple teams on one instance
+Every logd server is multi-tenant (supports multiple teams). Deployment scenarios differ only in who operates it:
+- **Self-hosted**: a company runs their own logd server for their teams
+- **SaaS**: log-decisions.com hosts teams as a managed service
+
+Technically identical — the CLI doesn't distinguish between them. A user can be logged into both simultaneously, with different projects pointing to different servers.
 
 AI agents are unaffected — they use project names as today. Routing is transparent.
 
@@ -62,7 +64,7 @@ interface Project {
   name: string
   description: string | null
   createdAt: string
-  server: string | null    // e.g. "https://api.logd.dev"
+  server: string | null    // e.g. "https://api.log-decisions.com"
   team: string | null      // e.g. "acme"
 }
 ```
@@ -76,7 +78,7 @@ New DB columns: `server TEXT DEFAULT NULL`, `team TEXT DEFAULT NULL` via migrati
 
 Creating a remote project:
 ```bash
-logd project create acme-ecommerce --server https://api.logd.dev --team acme
+logd project create acme-ecommerce --server https://api.log-decisions.com --team acme
 ```
 1. Validates server reachable + token valid for that team
 2. Creates project on remote server via API
@@ -86,14 +88,14 @@ logd project create acme-ecommerce --server https://api.logd.dev --team acme
 
 **Login**:
 ```bash
-logd login https://api.logd.dev --token my-api-token
+logd login https://api.log-decisions.com --token my-api-token
 ```
 
 **Storage** at `~/.logd/credentials.json` (created with `0600` permissions):
 ```json
 {
   "servers": {
-    "https://api.logd.dev": { "token": "my-api-token" },
+    "https://api.log-decisions.com": { "token": "my-api-token" },
     "https://logd.acme-internal.com": { "token": "other-token" }
   }
 }
