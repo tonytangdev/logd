@@ -1,10 +1,14 @@
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { Command } from "commander";
+import { BackendFactory } from "../core/backend.factory.js";
 import { resolveConfig } from "../core/config.js";
 import { DecisionService } from "../core/decision.service.js";
 import { EmbeddingService } from "../core/embedding.service.js";
 import { ProjectService } from "../core/project.service.js";
 import { createDatabase } from "../infra/db.js";
 import { DecisionRepo } from "../infra/decision.repo.js";
+import { CredentialStore } from "../infra/credentials.js";
 import { OllamaClient } from "../infra/ollama.client.js";
 import { ProjectRepo } from "../infra/project.repo.js";
 import { registerAddCommand } from "./commands/add.js";
@@ -24,11 +28,9 @@ export function createCli(): Command {
 	const projectService = new ProjectService(projectRepo);
 	const ollamaClient = new OllamaClient(config.ollamaUrl, config.model);
 	const embeddingService = new EmbeddingService(ollamaClient);
-	const decisionService = new DecisionService(
-		decisionRepo,
-		projectRepo,
-		embeddingService,
-	);
+	const credentialStore = new CredentialStore(join(homedir(), ".logd", "credentials.json"));
+	const backendFactory = new BackendFactory(decisionRepo, credentialStore, embeddingService);
+	const decisionService = new DecisionService(projectRepo, backendFactory);
 
 	const program = new Command();
 	program.name("logd").description("Log and search decisions").version("1.0.0");

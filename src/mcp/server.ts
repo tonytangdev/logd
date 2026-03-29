@@ -108,7 +108,7 @@ export function createMcpServer(
 		{ id: z.string() },
 		async (args) => {
 			try {
-				const decision = decisionService.getById(args.id);
+				const decision = await decisionService.getById(args.id);
 				return { content: [{ type: "text", text: JSON.stringify(decision) }] };
 			} catch (err) {
 				return {
@@ -155,7 +155,7 @@ export function createMcpServer(
 		{ id: z.string() },
 		async (args) => {
 			try {
-				decisionService.delete(args.id);
+				await decisionService.delete(args.id);
 				return {
 					content: [
 						{ type: "text", text: JSON.stringify({ deleted: args.id }) },
@@ -180,7 +180,7 @@ export function createMcpServer(
 		},
 		async (args) => {
 			try {
-				const decisions = decisionService.list({
+				const decisions = await decisionService.list({
 					project: args.project,
 					status: args.status as DecisionStatus | undefined,
 					limit: args.limit,

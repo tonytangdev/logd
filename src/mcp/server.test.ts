@@ -149,7 +149,7 @@ describe("MCP server", () => {
 
 		it("logd_show_decision delegates to DecisionService.getById", async () => {
 			const decision = { id: "uuid", title: "Use Postgres" };
-			vi.mocked(decisionService.getById).mockReturnValue(
+			vi.mocked(decisionService.getById).mockResolvedValue(
 				decision as unknown as Decision,
 			);
 			const result = await client.callTool({
@@ -196,7 +196,7 @@ describe("MCP server", () => {
 
 		it("logd_list_decisions delegates to DecisionService.list", async () => {
 			const decisions = [{ id: "d1", title: "Use Postgres" }];
-			vi.mocked(decisionService.list).mockReturnValue(
+			vi.mocked(decisionService.list).mockResolvedValue(
 				decisions as unknown as Decision[],
 			);
 			const result = await client.callTool({
@@ -224,9 +224,9 @@ describe("MCP server", () => {
 		});
 
 		it("tool handlers return error messages for failures", async () => {
-			vi.mocked(decisionService.getById).mockImplementation(() => {
-				throw new Error("Decision 'nonexistent' not found");
-			});
+			vi.mocked(decisionService.getById).mockRejectedValue(
+				new Error("Decision 'nonexistent' not found"),
+			);
 			const result = await client.callTool({
 				name: "logd_show_decision",
 				arguments: { id: "nonexistent" },

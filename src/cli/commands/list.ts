@@ -12,9 +12,9 @@ export function registerListCommand(
 		.option("-p, --project <project>", "Filter by project")
 		.option("-s, --status <status>", "Filter by status")
 		.option("-n, --limit <number>", "Max results", "20")
-		.action((opts: { project?: string; status?: string; limit: string }) => {
+		.action(async (opts: { project?: string; status?: string; limit: string }) => {
 			try {
-				const decisions = decisionService.list({
+				const decisions = await decisionService.list({
 					project: opts.project,
 					status: opts.status as DecisionStatus | undefined,
 					limit: Number.parseInt(opts.limit, 10),

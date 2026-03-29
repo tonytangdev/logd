@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { BackendFactory } from "./backend.factory.js";
 import { DecisionService } from "./decision.service.js";
 import { EmbeddingService } from "./embedding.service.js";
 import type {
@@ -8,6 +9,7 @@ import type {
 	IProjectRepo,
 	Project,
 } from "./types.js";
+import { CredentialStore } from "../infra/credentials.js";
 
 function createMockProjectRepo(projects: Project[] = []): IProjectRepo {
 	return {
@@ -51,6 +53,8 @@ describe("DecisionService", () => {
 	let projectRepo: IProjectRepo;
 	let embeddingClient: IEmbeddingClient;
 	let embeddingService: EmbeddingService;
+	let credentialStore: CredentialStore;
+	let backendFactory: BackendFactory;
 	let service: DecisionService;
 
 	beforeEach(() => {
@@ -58,7 +62,9 @@ describe("DecisionService", () => {
 		projectRepo = createMockProjectRepo([testProject]);
 		embeddingClient = createMockEmbeddingClient();
 		embeddingService = new EmbeddingService(embeddingClient);
-		service = new DecisionService(decisionRepo, projectRepo, embeddingService);
+		credentialStore = new CredentialStore("/tmp/fake-credentials.json");
+		backendFactory = new BackendFactory(decisionRepo, credentialStore, embeddingService);
+		service = new DecisionService(projectRepo, backendFactory);
 	});
 
 	describe("create", () => {
@@ -113,11 +119,8 @@ describe("DecisionService", () => {
 
 		it("shows 'none' when no projects exist", async () => {
 			projectRepo = createMockProjectRepo([]);
-			service = new DecisionService(
-				decisionRepo,
-				projectRepo,
-				embeddingService,
-			);
+			backendFactory = new BackendFactory(decisionRepo, credentialStore, embeddingService);
+			service = new DecisionService(projectRepo, backendFactory);
 
 			await expect(
 				service.create({ project: "nonexistent", title: "Test" }),
@@ -160,12 +163,12 @@ describe("DecisionService", () => {
 				created,
 			);
 
-			const found = service.getById(created.id);
+			const found = await service.getById(created.id);
 			expect(found.title).toBe("Test");
 		});
 
-		it("throws when decision not found", () => {
-			expect(() => service.getById("nonexistent")).toThrow(
+		it("throws when decision not found", async () => {
+			await expect(service.getById("nonexistent")).rejects.toThrow(
 				"Decision 'nonexistent' not found",
 			);
 		});
@@ -229,20 +232,20 @@ describe("DecisionService", () => {
 				decision,
 			);
 
-			service.delete(decision.id);
+			await service.delete(decision.id);
 			expect(decisionRepo.delete).toHaveBeenCalledWith(decision.id);
 		});
 
-		it("throws when decision not found", () => {
-			expect(() => service.delete("nonexistent")).toThrow(
+		it("throws when decision not found", async () => {
+			await expect(service.delete("nonexistent")).rejects.toThrow(
 				"Decision 'nonexistent' not found",
 			);
 		});
 	});
 
 	describe("list", () => {
-		it("delegates to repo with filters", () => {
-			service.list({ project: "testproject", status: "active" });
+		it("delegates to repo with filters", async () => {
+			await service.list({ project: "testproject", status: "active" });
 			expect(decisionRepo.list).toHaveBeenCalledWith({
 				project: "testproject",
 				status: "active",
@@ -250,15 +253,15 @@ describe("DecisionService", () => {
 			});
 		});
 
-		it("defaults limit to 20", () => {
-			service.list({});
+		it("defaults limit to 20", async () => {
+			await service.list({});
 			expect(decisionRepo.list).toHaveBeenCalledWith(
 				expect.objectContaining({ limit: 20 }),
 			);
 		});
 
-		it("respects custom limit", () => {
-			service.list({ limit: 5 });
+		it("respects custom limit", async () => {
+			await service.list({ limit: 5 });
 			expect(decisionRepo.list).toHaveBeenCalledWith(
 				expect.objectContaining({ limit: 5 }),
 			);
