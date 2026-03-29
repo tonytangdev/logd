@@ -109,6 +109,15 @@ Add to your Claude Code MCP config (`~/.claude/claude_desktop_config.json`):
 
 Precedence: defaults < env vars < CLI flags.
 
+## Team Use
+
+logd is local-first — everything works offline with your own Ollama instance. For teams, you have two options:
+
+- **Self-host** — run the logd server on your own infrastructure. See the [self-hosting guide](docs/self-hosting.md).
+- **Hosted** — use the managed service at [logd.dev](https://logd.dev) (coming soon).
+
+Both options let you share decisions across team members via `logd login` and remote projects.
+
 ## Architecture
 
 ```
