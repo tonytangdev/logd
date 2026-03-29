@@ -25,10 +25,15 @@ const fakeEmbedding = Array.from({ length: 1024 }, () => Math.random());
 describe("SqliteDecisionRepo", () => {
 	let repo: SqliteDecisionRepo;
 
+	let db: ReturnType<typeof createInMemoryDatabase>;
+
 	beforeEach(() => {
-		const db = createInMemoryDatabase();
+		db = createInMemoryDatabase();
+		db.exec(
+			"INSERT INTO teams (id, name, created_at) VALUES ('t-1', 'test-team', '2026-01-01')",
+		);
 		const projectRepo = new SqliteProjectRepo(db);
-		projectRepo.create("proj", null);
+		projectRepo.create("proj", null, "t-1");
 		repo = new SqliteDecisionRepo(db);
 	});
 
@@ -98,5 +103,36 @@ describe("SqliteDecisionRepo", () => {
 		repo.create(makeDecision({ id: "d-1" }), fakeEmbedding);
 		const results = repo.searchByVector(fakeEmbedding, 10, "other");
 		expect(results).toHaveLength(0);
+	});
+
+	it("list filters by teamId", () => {
+		const projectRepo = new SqliteProjectRepo(db);
+		db.exec(
+			"INSERT INTO teams (id, name, created_at) VALUES ('t-2', 'other-team', '2026-01-01')",
+		);
+		projectRepo.create("other-proj", null, "t-2");
+		repo.create(makeDecision({ id: "d-1", project: "proj" }), fakeEmbedding);
+		repo.create(
+			makeDecision({ id: "d-2", project: "other-proj" }),
+			fakeEmbedding,
+		);
+		const results = repo.list({ teamId: "t-1" });
+		expect(results).toHaveLength(1);
+		expect(results[0].id).toBe("d-1");
+	});
+
+	it("searchByVector filters by teamId", () => {
+		const projectRepo = new SqliteProjectRepo(db);
+		db.exec(
+			"INSERT INTO teams (id, name, created_at) VALUES ('t-2', 'other-team', '2026-01-01')",
+		);
+		projectRepo.create("other-proj", null, "t-2");
+		repo.create(makeDecision({ id: "d-1", project: "proj" }), fakeEmbedding);
+		repo.create(
+			makeDecision({ id: "d-2", project: "other-proj" }),
+			fakeEmbedding,
+		);
+		const results = repo.searchByVector(fakeEmbedding, 10, undefined, "t-1");
+		expect(results.every((r) => r.decision.project === "proj")).toBe(true);
 	});
 });

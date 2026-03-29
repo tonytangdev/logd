@@ -47,6 +47,7 @@ export class DecisionService {
 		project?: string;
 		status?: DecisionStatus;
 		limit?: number;
+		teamId?: string;
 	}): Decision[] {
 		return this.repo.list(options);
 	}
@@ -56,9 +57,10 @@ export class DecisionService {
 		query: string,
 		threshold: number,
 		limit: number,
+		teamId?: string,
 	): Promise<SearchResult[]> {
 		const vector = await this.embedding.embed(buildQueryTemplate(query));
-		const results = this.repo.searchByVector(vector, limit, project);
+		const results = this.repo.searchByVector(vector, limit, project, teamId);
 		return results.filter((r) => r.score >= threshold);
 	}
 }

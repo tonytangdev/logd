@@ -125,10 +125,37 @@ export class SqliteDecisionRepo implements DecisionRepository {
 	}
 
 	list(
-		options: { project?: string; status?: DecisionStatus; limit?: number } = {},
+		options: {
+			project?: string;
+			status?: DecisionStatus;
+			limit?: number;
+			teamId?: string;
+		} = {},
 	): Decision[] {
 		const conditions: string[] = [];
 		const values: unknown[] = [];
+		const limit = options.limit ?? 20;
+
+		if (options.teamId) {
+			if (options.project) {
+				conditions.push("d.project = ?");
+				values.push(options.project);
+			}
+			if (options.status) {
+				conditions.push("d.status = ?");
+				values.push(options.status);
+			}
+			const where =
+				conditions.length > 0 ? `AND ${conditions.join(" AND ")}` : "";
+			const rows = this.db
+				.prepare(
+					`SELECT d.id, d.project, d.title, d.context, d.alternatives, d.tags, d.status, d.links, d.created_at, d.updated_at
+					 FROM decisions d JOIN projects p ON d.project = p.name
+					 WHERE p.team_id = ? ${where} ORDER BY d.created_at DESC LIMIT ?`,
+				)
+				.all(options.teamId, ...values, limit) as DecisionRow[];
+			return rows.map(rowToDecision);
+		}
 
 		if (options.project) {
 			conditions.push("project = ?");
@@ -141,7 +168,6 @@ export class SqliteDecisionRepo implements DecisionRepository {
 
 		const where =
 			conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-		const limit = options.limit ?? 20;
 
 		const rows = this.db
 			.prepare(
@@ -157,6 +183,7 @@ export class SqliteDecisionRepo implements DecisionRepository {
 		embedding: number[],
 		limit: number,
 		project?: string,
+		teamId?: string,
 	): SearchResult[] {
 		const rows = this.db
 			.prepare(
@@ -176,6 +203,12 @@ export class SqliteDecisionRepo implements DecisionRepository {
 			const decision = this.findById(row.id);
 			if (!decision) continue;
 			if (project && decision.project !== project) continue;
+			if (teamId) {
+				const projectRow = this.db
+					.prepare("SELECT team_id FROM projects WHERE name = ?")
+					.get(decision.project) as { team_id: string } | undefined;
+				if (!projectRow || projectRow.team_id !== teamId) continue;
+			}
 			results.push({ decision, score: 1 - row.distance });
 		}
 
