@@ -5,37 +5,37 @@ import type { TokenRepository } from "../ports/token.repository.js";
 export class TokenService {
 	constructor(private repo: TokenRepository) {}
 
-	create(userId: string, name: string): { raw: string; token: Token } {
+	async create(userId: string, name: string): Promise<{ raw: string; token: Token }> {
 		const raw = generateRawToken();
 		const hash = hashToken(raw);
 		const token = buildToken(userId, name, hash);
-		this.repo.create(token, hash);
+		await this.repo.create(token, hash);
 		return { raw, token };
 	}
 
-	createWithRaw(userId: string, name: string, rawToken: string): Token {
+	async createWithRaw(userId: string, name: string, rawToken: string): Promise<Token> {
 		const hash = hashToken(rawToken);
 		const token = buildToken(userId, name, hash);
-		this.repo.create(token, hash);
+		await this.repo.create(token, hash);
 		return token;
 	}
 
-	authenticate(rawToken: string): { id: string } | null {
+	async authenticate(rawToken: string): Promise<{ id: string } | null> {
 		const hash = hashToken(rawToken);
-		const result = this.repo.findByHash(hash);
+		const result = await this.repo.findByHash(hash);
 		return result ? { id: result.userId } : null;
 	}
 
-	touch(rawToken: string): void {
+	async touch(rawToken: string): Promise<void> {
 		const hash = hashToken(rawToken);
-		this.repo.touchLastUsed(hash);
+		await this.repo.touchLastUsed(hash);
 	}
 
-	list(userId: string): Token[] {
+	async list(userId: string): Promise<Token[]> {
 		return this.repo.listByUser(userId);
 	}
 
-	revoke(tokenId: string): void {
-		this.repo.delete(tokenId);
+	async revoke(tokenId: string): Promise<void> {
+		await this.repo.delete(tokenId);
 	}
 }

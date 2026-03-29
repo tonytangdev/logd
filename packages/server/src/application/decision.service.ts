@@ -22,33 +22,33 @@ export class DecisionService {
 	async create(input: CreateDecisionInput): Promise<Decision> {
 		const decision = buildDecision(input);
 		const vector = await this.embedding.embed(buildDocumentTemplate(decision));
-		this.repo.create(decision, vector);
+		await this.repo.create(decision, vector);
 		return decision;
 	}
 
-	get(id: string): Decision | null {
+	async get(id: string): Promise<Decision | null> {
 		return this.repo.findById(id);
 	}
 
 	async update(id: string, input: UpdateDecisionInput): Promise<void> {
-		const existing = this.repo.findById(id);
+		const existing = await this.repo.findById(id);
 		if (!existing) throw new NotFoundError(`Decision '${id}' not found`);
 
 		const merged = { ...existing, ...input };
 		const vector = await this.embedding.embed(buildDocumentTemplate(merged));
-		this.repo.update(id, input, vector);
+		await this.repo.update(id, input, vector);
 	}
 
-	delete(id: string): void {
-		this.repo.delete(id);
+	async delete(id: string): Promise<void> {
+		await this.repo.delete(id);
 	}
 
-	list(options?: {
+	async list(options?: {
 		project?: string;
 		status?: DecisionStatus;
 		limit?: number;
 		teamId?: string;
-	}): Decision[] {
+	}): Promise<Decision[]> {
 		return this.repo.list(options);
 	}
 
@@ -60,7 +60,7 @@ export class DecisionService {
 		teamId?: string,
 	): Promise<SearchResult[]> {
 		const vector = await this.embedding.embed(buildQueryTemplate(query));
-		const results = this.repo.searchByVector(vector, limit, project, teamId);
+		const results = await this.repo.searchByVector(vector, limit, project, teamId);
 		return results.filter((r) => r.score >= threshold);
 	}
 }

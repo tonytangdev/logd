@@ -3,11 +3,11 @@ import type { ProjectRepository } from "../ports/project.repository.js";
 export class ProjectService {
 	constructor(private repo: ProjectRepository) {}
 
-	create(name: string, description: string | null, teamId: string): void {
-		if (this.repo.findByName(name)) {
+	async create(name: string, description: string | null, teamId: string): Promise<void> {
+		if (await this.repo.findByName(name)) {
 			throw new ConflictError(`Project '${name}' already exists`);
 		}
-		this.repo.create(name, description, teamId);
+		await this.repo.create(name, description, teamId);
 	}
 }
 

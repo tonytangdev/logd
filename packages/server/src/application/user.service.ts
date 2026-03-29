@@ -10,17 +10,17 @@ export class UserService {
 		private tokenService: TokenService,
 	) {}
 
-	create(email: string, name: string): { user: User; rawToken: string } {
-		if (this.repo.findByEmail(email)) {
+	async create(email: string, name: string): Promise<{ user: User; rawToken: string }> {
+		if (await this.repo.findByEmail(email)) {
 			throw new ConflictError(`User with email '${email}' already exists`);
 		}
 		const user = buildUser(email, name);
-		this.repo.create(user);
-		const { raw } = this.tokenService.create(user.id, "initial");
+		await this.repo.create(user);
+		const { raw } = await this.tokenService.create(user.id, "initial");
 		return { user, rawToken: raw };
 	}
 
-	listByTeam(teamId: string): User[] {
+	async listByTeam(teamId: string): Promise<User[]> {
 		return this.repo.listByTeam(teamId);
 	}
 }
