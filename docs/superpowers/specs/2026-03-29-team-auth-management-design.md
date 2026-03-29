@@ -77,18 +77,63 @@ This gives Phase 2a users a seamless upgrade: their existing token becomes the a
 
 ## 3. Auth Flow
 
-Auth middleware rewrite (replaces Phase 2a single-token check):
+Uses Hono's built-in `bearerAuth` middleware from `hono/bearer-auth` with a custom `verifyToken` callback, plus typed context variables.
 
-1. Extract `Bearer <token>` from `Authorization` header
-2. Hash token with SHA-256
-3. Look up `token_hash` in `tokens` table → get `user_id`
-4. No match → 401 `"Authentication failed: token expired or invalid."`
-5. Read `X-Team` header
-6. No X-Team → 401 `"X-Team header is required"`
-7. Look up `(user_id, team_id)` in `team_members` where team name matches X-Team
-8. No membership → 403 `"Access denied: not a member of this team."`
-9. Set request context: `{ userId, teamId, role }`
-10. Update `last_used_at` on token (fire-and-forget)
+**Typed app environment:**
+
+```typescript
+type AppEnv = {
+  Variables: {
+    userId: string;
+    teamId: string;
+    role: "admin" | "member";
+  };
+};
+
+const app = new Hono<AppEnv>();
+```
+
+**Auth middleware** (replaces Phase 2a single-token check):
+
+```typescript
+import { bearerAuth } from "hono/bearer-auth";
+
+app.use("*", bearerAuth({
+  verifyToken: async (token, c) => {
+    // 1. Hash token, look up in DB
+    const user = await tokenService.authenticate(token);
+    if (!user) return false; // → 401
+
+    // 2. Check X-Team header
+    const teamName = c.req.header("X-Team");
+    if (!teamName) return false; // → 401
+
+    // 3. Check team membership
+    const membership = await teamService.getMembership(user.id, teamName);
+    if (!membership) {
+      // Need 403, not 401 — handled via separate team-check middleware
+      // after bearerAuth passes
+    }
+
+    // 4. Set context
+    c.set("userId", user.id);
+    c.set("teamId", membership.teamId);
+    c.set("role", membership.role);
+
+    // 5. Update last_used_at (fire-and-forget)
+    tokenService.touch(token);
+
+    return true;
+  },
+}));
+```
+
+**Note on 401 vs 403:** `bearerAuth` only returns 401 on `verifyToken: false`. For the 403 case (valid token, not in team), we need a second lightweight middleware after `bearerAuth` that checks team membership and returns 403 `"Access denied: not a member of this team."`. The flow:
+
+1. `bearerAuth` with `verifyToken` — validates token, sets `userId` in context. Returns 401 on bad token.
+2. Team-check middleware — reads `X-Team` header, looks up membership. Returns 401 if no X-Team header, 403 if not a member. Sets `teamId` and `role` in context.
+
+This keeps the auth pipeline clean and lets Hono handle the Bearer parsing/validation boilerplate.
 
 ## 4. API Endpoints
 
@@ -181,7 +226,8 @@ packages/server/src/
       sqlite.token.repo.ts
     http/
       middleware/
-        auth.ts                      # rewritten — DB-backed token + team
+        auth.ts                      # bearerAuth + verifyToken (DB-backed)
+        team.ts                      # X-Team header → membership check → set teamId/role
         role.ts                      # admin role guard
       routes/
         teams.ts
