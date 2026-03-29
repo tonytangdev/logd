@@ -1,48 +1,53 @@
+import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
-import { describe, expect, it } from "vitest";
-import { authMiddleware } from "./auth.js";
+import { createAuthMiddleware } from "./auth.js";
+import type { TokenService } from "../../../application/token.service.js";
 
-function makeApp(token: string) {
+function mockTokenService(valid = true): Pick<TokenService, "authenticate" | "touch"> {
+	return {
+		authenticate: vi.fn(() => (valid ? { id: "u-1" } : null)),
+		touch: vi.fn(),
+	};
+}
+
+function makeApp(tokenSvc: Pick<TokenService, "authenticate" | "touch">) {
 	const app = new Hono();
-	app.use("*", authMiddleware(token));
-	app.get("/test", (c) => c.text("ok"));
+	app.use("*", createAuthMiddleware(tokenSvc as any));
+	app.get("/test", (c) => c.json({ userId: c.get("userId") }));
 	return app;
 }
 
-describe("authMiddleware", () => {
+describe("auth middleware (bearerAuth)", () => {
 	it("returns 401 when no Authorization header", async () => {
-		const app = makeApp("secret");
+		const app = makeApp(mockTokenService());
 		const res = await app.request("/test");
 		expect(res.status).toBe(401);
-		const body = await res.text();
-		expect(body).toContain("Authentication failed");
 	});
 
-	it("returns 401 when token is wrong", async () => {
-		const app = makeApp("secret");
+	it("returns 401 when token is invalid", async () => {
+		const app = makeApp(mockTokenService(false));
 		const res = await app.request("/test", {
-			headers: { Authorization: "Bearer wrong" },
+			headers: { Authorization: "Bearer badtoken" },
 		});
 		expect(res.status).toBe(401);
 	});
 
-	it("passes with correct token", async () => {
-		const app = makeApp("secret");
+	it("sets userId on valid token", async () => {
+		const app = makeApp(mockTokenService());
 		const res = await app.request("/test", {
-			headers: { Authorization: "Bearer secret" },
+			headers: { Authorization: "Bearer goodtoken" },
 		});
 		expect(res.status).toBe(200);
-		expect(await res.text()).toBe("ok");
+		const body = await res.json();
+		expect(body.userId).toBe("u-1");
 	});
 
-	it("accepts X-Team header without error", async () => {
-		const app = makeApp("secret");
-		const res = await app.request("/test", {
-			headers: {
-				Authorization: "Bearer secret",
-				"X-Team": "my-team",
-			},
+	it("calls touch on valid token", async () => {
+		const svc = mockTokenService();
+		const app = makeApp(svc);
+		await app.request("/test", {
+			headers: { Authorization: "Bearer goodtoken" },
 		});
-		expect(res.status).toBe(200);
+		expect(svc.touch).toHaveBeenCalledWith("goodtoken");
 	});
 });
