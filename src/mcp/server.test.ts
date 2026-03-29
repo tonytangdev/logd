@@ -76,7 +76,27 @@ describe("MCP server", () => {
 				name: "logd_create_project",
 				arguments: { name: "test", description: "A test" },
 			});
-			expect(projectService.create).toHaveBeenCalledWith("test", "A test");
+			expect(projectService.create).toHaveBeenCalledWith("test", "A test", undefined, undefined);
+			expect(result.content).toEqual([
+				{ type: "text", text: JSON.stringify(project) },
+			]);
+		});
+
+		it("logd_create_project forwards server and team to ProjectService.create", async () => {
+			const project = {
+				id: "p2",
+				name: "remote",
+				description: null,
+				createdAt: "2024-01-01",
+				server: "https://logd.example.com",
+				team: "my-team",
+			};
+			vi.mocked(projectService.create).mockReturnValue(project);
+			const result = await client.callTool({
+				name: "logd_create_project",
+				arguments: { name: "remote", server: "https://logd.example.com", team: "my-team" },
+			});
+			expect(projectService.create).toHaveBeenCalledWith("remote", undefined, "https://logd.example.com", "my-team");
 			expect(result.content).toEqual([
 				{ type: "text", text: JSON.stringify(project) },
 			]);

@@ -16,10 +16,15 @@ export function createMcpServer(
 	server.tool(
 		"logd_create_project",
 		"Create a new project",
-		{ name: z.string(), description: z.string().optional() },
+		{
+			name: z.string(),
+			description: z.string().optional(),
+			server: z.string().optional().describe("Remote server URL"),
+			team: z.string().optional().describe("Team name on the remote server"),
+		},
 		async (args) => {
 			try {
-				const project = projectService.create(args.name, args.description);
+				const project = projectService.create(args.name, args.description, args.server, args.team);
 				return { content: [{ type: "text", text: JSON.stringify(project) }] };
 			} catch (err) {
 				return {
