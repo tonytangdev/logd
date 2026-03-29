@@ -45,7 +45,7 @@ export function createDatabase(dbPath: string): Database.Database {
 
 		CREATE TABLE IF NOT EXISTS projects (
 			id TEXT PRIMARY KEY,
-			name TEXT NOT NULL,
+			name TEXT NOT NULL UNIQUE,
 			description TEXT,
 			team_id TEXT REFERENCES teams(id),
 			created_at TEXT NOT NULL DEFAULT (datetime('now'))
