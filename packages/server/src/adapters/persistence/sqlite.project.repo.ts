@@ -5,12 +5,12 @@ import type { ProjectRepository } from "../../ports/project.repository.js";
 export class SqliteProjectRepo implements ProjectRepository {
 	constructor(private db: Database.Database) {}
 
-	create(name: string, description: string | null): void {
+	create(name: string, description: string | null, teamId: string): void {
 		this.db
 			.prepare(
-				"INSERT INTO projects (id, name, description, created_at) VALUES (?, ?, ?, ?)",
+				"INSERT INTO projects (id, name, description, team_id, created_at) VALUES (?, ?, ?, ?, ?)",
 			)
-			.run(randomUUID(), name, description, new Date().toISOString());
+			.run(randomUUID(), name, description, teamId, new Date().toISOString());
 	}
 
 	findByName(name: string): boolean {
