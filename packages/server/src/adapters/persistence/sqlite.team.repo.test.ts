@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import type { Team } from "@logd/shared";
+import type Database from "better-sqlite3";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createInMemoryDatabase } from "./database.js";
 import { SqliteTeamRepo } from "./sqlite.team.repo.js";
 import { SqliteUserRepo } from "./sqlite.user.repo.js";
-import type Database from "better-sqlite3";
 
 function makeTeam(overrides?: Partial<Team>): Team {
 	return {

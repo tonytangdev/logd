@@ -73,10 +73,14 @@ export function createDatabase(dbPath: string): Database.Database {
 	`);
 
 	// Migration: add team_id to projects if missing
-	const projectColumns = db.pragma("table_info(projects)") as { name: string }[];
+	const projectColumns = db.pragma("table_info(projects)") as {
+		name: string;
+	}[];
 	const columnNames = projectColumns.map((c) => c.name);
 	if (!columnNames.includes("team_id")) {
-		db.exec("ALTER TABLE projects ADD COLUMN team_id TEXT REFERENCES teams(id)");
+		db.exec(
+			"ALTER TABLE projects ADD COLUMN team_id TEXT REFERENCES teams(id)",
+		);
 	}
 
 	return db;

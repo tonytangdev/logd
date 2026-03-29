@@ -1,5 +1,5 @@
-import type Database from "better-sqlite3";
 import type { Team, TeamMember, TeamRole } from "@logd/shared";
+import type Database from "better-sqlite3";
 import type { TeamRepository } from "../../ports/team.repository.js";
 
 interface TeamRow {
@@ -46,7 +46,9 @@ export class SqliteTeamRepo implements TeamRepository {
 
 	findByName(name: string): Team | null {
 		const row = this.db
-			.prepare("SELECT id, name, created_at FROM teams WHERE LOWER(name) = LOWER(?)")
+			.prepare(
+				"SELECT id, name, created_at FROM teams WHERE LOWER(name) = LOWER(?)",
+			)
 			.get(name) as TeamRow | undefined;
 		return row ? rowToTeam(row) : null;
 	}
@@ -92,11 +94,16 @@ export class SqliteTeamRepo implements TeamRepository {
 
 	updateMemberRole(teamId: string, userId: string, role: TeamRole): void {
 		this.db
-			.prepare("UPDATE team_members SET role = ? WHERE team_id = ? AND user_id = ?")
+			.prepare(
+				"UPDATE team_members SET role = ? WHERE team_id = ? AND user_id = ?",
+			)
 			.run(role, teamId, userId);
 	}
 
-	getMembership(userId: string, teamName: string): { teamId: string; role: TeamRole } | null {
+	getMembership(
+		userId: string,
+		teamName: string,
+	): { teamId: string; role: TeamRole } | null {
 		const row = this.db
 			.prepare(
 				`SELECT tm.team_id, tm.role

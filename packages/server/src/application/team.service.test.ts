@@ -1,15 +1,19 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { Team, TeamMember, TeamRole } from "@logd/shared";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TeamRepository } from "../ports/team.repository.js";
 import { TeamService } from "./team.service.js";
 
-function mockTeamRepo(): TeamRepository & { _setHasProjects: (v: boolean) => void } {
+function mockTeamRepo(): TeamRepository & {
+	_setHasProjects: (v: boolean) => void;
+} {
 	const teams = new Map<string, Team>();
 	const members = new Map<string, TeamMember[]>();
 	let projectsExist = false;
 
 	return {
-		create: vi.fn((team: Team) => { teams.set(team.id, team); }),
+		create: vi.fn((team: Team) => {
+			teams.set(team.id, team);
+		}),
 		findById: vi.fn((id: string) => teams.get(id) ?? null),
 		findByName: vi.fn((name: string) => {
 			for (const t of teams.values()) {
@@ -18,7 +22,9 @@ function mockTeamRepo(): TeamRepository & { _setHasProjects: (v: boolean) => voi
 			return null;
 		}),
 		listByUser: vi.fn(() => [...teams.values()]),
-		delete: vi.fn((id: string) => { teams.delete(id); }),
+		delete: vi.fn((id: string) => {
+			teams.delete(id);
+		}),
 		hasProjects: vi.fn(() => projectsExist),
 		addMember: vi.fn((teamId: string, userId: string, role: TeamRole) => {
 			const list = members.get(teamId) ?? [];
@@ -38,7 +44,9 @@ function mockTeamRepo(): TeamRepository & { _setHasProjects: (v: boolean) => voi
 			return null;
 		}),
 		listMembers: vi.fn((teamId: string) => members.get(teamId) ?? []),
-		_setHasProjects: (v: boolean) => { projectsExist = v; },
+		_setHasProjects: (v: boolean) => {
+			projectsExist = v;
+		},
 	};
 }
 

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import type { User } from "@logd/shared";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createInMemoryDatabase } from "./database.js";
 import { SqliteUserRepo } from "./sqlite.user.repo.js";
 

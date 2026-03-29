@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import type { Token } from "@logd/shared";
+import type Database from "better-sqlite3";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createInMemoryDatabase } from "./database.js";
 import { SqliteTokenRepo } from "./sqlite.token.repo.js";
-import type Database from "better-sqlite3";
 
 function seedUser(db: Database.Database): void {
 	db.exec(

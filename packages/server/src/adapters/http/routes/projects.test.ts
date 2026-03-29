@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
-import type { AppEnv } from "../app.js";
 import { bootstrap } from "../../../application/bootstrap.js";
 import { ProjectService } from "../../../application/project.service.js";
 import { TeamService } from "../../../application/team.service.js";
@@ -10,6 +9,7 @@ import { SqliteProjectRepo } from "../../persistence/sqlite.project.repo.js";
 import { SqliteTeamRepo } from "../../persistence/sqlite.team.repo.js";
 import { SqliteTokenRepo } from "../../persistence/sqlite.token.repo.js";
 import { SqliteUserRepo } from "../../persistence/sqlite.user.repo.js";
+import type { AppEnv } from "../app.js";
 import { createAuthMiddleware } from "../middleware/auth.js";
 import { teamMiddleware } from "../middleware/team.js";
 import { projectRoutes } from "./projects.js";

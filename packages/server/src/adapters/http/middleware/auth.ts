@@ -1,5 +1,5 @@
-import { bearerAuth } from "hono/bearer-auth";
 import type { MiddlewareHandler } from "hono";
+import { bearerAuth } from "hono/bearer-auth";
 import type { TokenService } from "../../../application/token.service.js";
 import type { AppEnv } from "../app.js";
 

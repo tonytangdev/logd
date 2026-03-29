@@ -1,5 +1,5 @@
-import type Database from "better-sqlite3";
 import type { User } from "@logd/shared";
+import type Database from "better-sqlite3";
 import type { UserRepository } from "../../ports/user.repository.js";
 
 interface UserRow {
@@ -23,7 +23,9 @@ export class SqliteUserRepo implements UserRepository {
 
 	create(user: User): void {
 		this.db
-			.prepare("INSERT INTO users (id, email, name, created_at) VALUES (?, ?, ?, ?)")
+			.prepare(
+				"INSERT INTO users (id, email, name, created_at) VALUES (?, ?, ?, ?)",
+			)
 			.run(user.id, user.email, user.name, user.createdAt);
 	}
 
@@ -36,7 +38,9 @@ export class SqliteUserRepo implements UserRepository {
 
 	findByEmail(email: string): User | null {
 		const row = this.db
-			.prepare("SELECT id, email, name, created_at FROM users WHERE LOWER(email) = LOWER(?)")
+			.prepare(
+				"SELECT id, email, name, created_at FROM users WHERE LOWER(email) = LOWER(?)",
+			)
 			.get(email) as UserRow | undefined;
 		return row ? rowToUser(row) : null;
 	}

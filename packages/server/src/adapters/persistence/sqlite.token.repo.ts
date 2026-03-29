@@ -1,5 +1,5 @@
-import type Database from "better-sqlite3";
 import type { Token } from "@logd/shared";
+import type Database from "better-sqlite3";
 import type { TokenRepository } from "../../ports/token.repository.js";
 
 interface TokenRow {
@@ -29,7 +29,14 @@ export class SqliteTokenRepo implements TokenRepository {
 			.prepare(
 				"INSERT INTO tokens (id, user_id, token_hash, name, created_at, last_used_at) VALUES (?, ?, ?, ?, ?, ?)",
 			)
-			.run(token.id, token.userId, tokenHash, token.name, token.createdAt, token.lastUsedAt);
+			.run(
+				token.id,
+				token.userId,
+				tokenHash,
+				token.name,
+				token.createdAt,
+				token.lastUsedAt,
+			);
 	}
 
 	findByHash(tokenHash: string): { token: Token; userId: string } | null {

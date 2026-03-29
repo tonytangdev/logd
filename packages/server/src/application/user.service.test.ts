@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { User } from "@logd/shared";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UserRepository } from "../ports/user.repository.js";
 import type { TokenService } from "./token.service.js";
 import { UserService } from "./user.service.js";
@@ -7,7 +7,9 @@ import { UserService } from "./user.service.js";
 function mockUserRepo(): UserRepository {
 	const store = new Map<string, User>();
 	return {
-		create: vi.fn((user: User) => { store.set(user.id, user); }),
+		create: vi.fn((user: User) => {
+			store.set(user.id, user);
+		}),
 		findById: vi.fn((id: string) => store.get(id) ?? null),
 		findByEmail: vi.fn((email: string) => {
 			for (const u of store.values()) {
@@ -24,7 +26,13 @@ function mockTokenService(): Pick<TokenService, "create"> {
 	return {
 		create: vi.fn(() => ({
 			raw: "raw-token-abc",
-			token: { id: "tk-1", userId: "u-1", name: "initial", createdAt: "", lastUsedAt: null },
+			token: {
+				id: "tk-1",
+				userId: "u-1",
+				name: "initial",
+				createdAt: "",
+				lastUsedAt: null,
+			},
 		})),
 	};
 }
@@ -50,7 +58,9 @@ describe("UserService", () => {
 
 	it("create throws on duplicate email", () => {
 		service.create("tony@example.com", "Tony");
-		expect(() => service.create("tony@example.com", "Tony 2")).toThrow("already exists");
+		expect(() => service.create("tony@example.com", "Tony 2")).toThrow(
+			"already exists",
+		);
 	});
 
 	it("listByTeam delegates to repo", () => {
