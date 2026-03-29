@@ -16,6 +16,7 @@ Monorepo is set up (Phase 2c) — server lives at `packages/server/`.
 - **X-Team header ignored** — accepted but not used for scoping in Phase 2a
 - **Ollama for embeddings** — same as CLI, configured via env vars
 - **Hexagonal architecture** — domain/ports/application/adapters separation
+- **Types from `@logd/shared`** — server uses `Decision`, `Project`, `SearchResult`, etc. from shared. Domain layer uses shared types directly (no re-definition) since both CLI and server must agree on the data contract.
 
 ## 1. API Endpoints
 
@@ -23,16 +24,24 @@ Exact match to `RemoteClient` contract:
 
 | Method | Path | Body | Response | Notes |
 |--------|------|------|----------|-------|
-| `POST` | `/decisions` | `CreateDecisionInput + project` | `Decision` (200) | Server generates ID, timestamps, computes embedding |
+| `POST` | `/decisions` | `CreateDecisionInput` | `Decision` (201) | Server generates ID, timestamps, computes embedding |
 | `GET` | `/decisions/:id` | — | `Decision` (200) or 404 | |
 | `PATCH` | `/decisions/:id` | `UpdateDecisionInput` | 204 | Re-computes embedding |
-| `DELETE` | `/decisions/:id` | — | 204 | |
+| `DELETE` | `/decisions/:id` | — | 204 | Deletes from both `decisions` and `decisions_vec` |
 | `GET` | `/decisions?project=&status=&limit=` | — | `Decision[]` (200) | |
-| `POST` | `/decisions/search` | `{project, query, threshold, limit}` | `SearchResult[]` (200) | Server computes embedding from query |
-| `POST` | `/projects` | `{name, description?}` | 201 | |
+| `POST` | `/decisions/search` | `{project, query, threshold, limit}` | `SearchResult[]` (200) | `project` is required. Server computes embedding. |
+| `POST` | `/projects` | `{name, description?}` | 201 (empty body) | |
 | `GET` | `/auth/validate` | — | 200 | Validates Bearer token |
 
 All endpoints require `Authorization: Bearer <token>`. `X-Team` header accepted but ignored.
+
+**Error responses:**
+- 401: `"Authentication failed: token expired or invalid."` — missing/invalid token
+- 404: `"Decision '<id>' not found"` — GET/PATCH/DELETE with unknown ID
+- 400: `"<field> is required"` — missing required fields (title, project on create; query, project on search)
+- 409: `"Project '<name>' already exists"` — duplicate project name
+
+Note: `CreateDecisionInput` from `@logd/shared` already includes `project`. The RemoteClient sends `{ ...input, project }` which is just `CreateDecisionInput`.
 
 ## 2. Architecture (Hexagonal)
 
@@ -71,11 +80,13 @@ packages/server/src/
         auth.ts
 ```
 
-- **Domain**: pure business logic, no dependencies
+- **Domain**: pure business logic, no dependencies. Uses types from `@logd/shared`.
 - **Ports**: interfaces (repository, embedding provider)
 - **Application**: use cases, depends only on ports
 - **Adapters**: implementations (SQLite, Ollama, Hono HTTP)
 - **Dependency injection** at startup in `index.ts`
+
+**Persistence adapters** map between DB columns (snake_case: `created_at`, `updated_at`) and domain types (camelCase: `createdAt`, `updatedAt`). Arrays (alternatives, tags, links) stored as JSON strings, parsed on read.
 
 ## 3. Database Schema
 
@@ -108,7 +119,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS decisions_vec USING vec0(
 );
 ```
 
-Arrays (alternatives, tags, links) stored as JSON strings, same as CLI.
+Note: embedding dimension (1024) is coupled to `qwen3-embedding:0.6b`. If the model changes, the vec table must be recreated. This is acceptable for Phase 2a.
 
 ## 4. Auth Middleware
 
@@ -129,12 +140,17 @@ Hono middleware applied to all routes:
 3. `OllamaProvider` calls `{ollamaUrl}/api/embed`
 4. Embedding stored in `decisions_vec`
 
+**On delete:**
+- Delete from both `decisions` and `decisions_vec` (prevents orphaned vectors in search)
+
 **On search (`POST /decisions/search`):**
-1. Receives `{project, query, threshold, limit}`
+1. Receives `{project, query, threshold, limit}` — `project` is required (unlike CLI's `SearchInput` where it's optional)
 2. Query template: `Instruct: Given a question about past decisions, retrieve relevant decision records\nQuery: {query}` (same as CLI)
 3. `EmbeddingProvider.embed(queryText)` → vector
-4. Cosine similarity search in `decisions_vec`
-5. Filter by project, threshold, return `SearchResult[]`
+4. Cosine similarity search in `decisions_vec`, then join with `decisions` table to filter by project
+5. Filter by threshold, return `SearchResult[]`
+
+Note: `decisions_vec` has no `project` column. The repo must query vectors first, then look up the decision to check project membership (same approach as CLI's `DecisionRepo.searchByVector`).
 
 Embedding templates duplicated from CLI (small, avoids coupling).
 
