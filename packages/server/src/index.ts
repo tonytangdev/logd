@@ -17,6 +17,10 @@ import { loadConfig } from "./config.js";
 
 const config = loadConfig();
 
+if (!config.apiToken) {
+	console.warn("LOGD_API_TOKEN not set — bootstrap will skip admin creation");
+}
+
 const db = createDatabase(config.dbPath);
 const embeddingProvider = new OllamaProvider(config.ollamaUrl, config.model);
 
