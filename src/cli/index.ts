@@ -19,6 +19,7 @@ import { registerProjectCommand } from "./commands/project.js";
 import { registerSearchCommand } from "./commands/search.js";
 import { registerServeCommand } from "./commands/serve.js";
 import { registerShowCommand } from "./commands/show.js";
+import { registerLoginCommand } from "./commands/login.js";
 
 export function createCli(): Command {
 	const config = resolveConfig();
@@ -43,6 +44,7 @@ export function createCli(): Command {
 	registerListCommand(program, decisionService);
 	registerDeleteCommand(program, decisionService);
 	registerServeCommand(program, decisionService, projectService);
+	registerLoginCommand(program, credentialStore);
 
 	return program;
 }
