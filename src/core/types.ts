@@ -24,6 +24,8 @@ export interface Project {
 	name: string;
 	description: string | null;
 	createdAt: string;
+	server: string | null;
+	team: string | null;
 }
 
 export interface CreateDecisionInput {

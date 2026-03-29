@@ -63,6 +63,8 @@ describe("type contracts", () => {
 			name: "myproject",
 			description: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
+			server: null,
+			team: null,
 		};
 		expect(project.name).toBe("myproject");
 	});

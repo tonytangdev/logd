@@ -68,6 +68,8 @@ describe("MCP server", () => {
 				name: "test",
 				description: "A test",
 				createdAt: "2024-01-01",
+				server: null,
+				team: null,
 			};
 			vi.mocked(projectService.create).mockReturnValue(project);
 			const result = await client.callTool({
@@ -82,7 +84,7 @@ describe("MCP server", () => {
 
 		it("logd_list_projects delegates to ProjectService.list", async () => {
 			const projects = [
-				{ id: "p1", name: "test", description: null, createdAt: "2024-01-01" },
+				{ id: "p1", name: "test", description: null, createdAt: "2024-01-01", server: null, team: null },
 			];
 			vi.mocked(projectService.list).mockReturnValue(projects);
 			const result = await client.callTool({

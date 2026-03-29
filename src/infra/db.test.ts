@@ -33,6 +33,15 @@ describe("createDatabase", () => {
 		db.close();
 	});
 
+	it("creates projects table with server and team columns", () => {
+		const db = createDatabase(join(tempDir, "test.db"));
+		const columns = db.pragma("table_info(projects)") as { name: string }[];
+		const names = columns.map((c: { name: string }) => c.name);
+		expect(names).toContain("server");
+		expect(names).toContain("team");
+		db.close();
+	});
+
 	it("creates decisions table with correct columns", () => {
 		const db = createDatabase(join(tempDir, "test.db"));
 		const columns = db.pragma("table_info(decisions)") as { name: string }[];

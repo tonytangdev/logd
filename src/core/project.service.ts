@@ -21,6 +21,8 @@ export class ProjectService {
 			name: normalized,
 			description: description ?? null,
 			createdAt: new Date().toISOString(),
+			server: null,
+			team: null,
 		};
 
 		this.repo.create(project);

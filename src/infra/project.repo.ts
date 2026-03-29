@@ -6,6 +6,8 @@ interface ProjectRow {
 	name: string;
 	description: string | null;
 	created_at: string;
+	server: string | null;
+	team: string | null;
 }
 
 function rowToProject(row: ProjectRow): Project {
@@ -14,6 +16,8 @@ function rowToProject(row: ProjectRow): Project {
 		name: row.name,
 		description: row.description,
 		createdAt: row.created_at,
+		server: row.server ?? null,
+		team: row.team ?? null,
 	};
 }
 
@@ -27,15 +31,15 @@ export class ProjectRepo implements IProjectRepo {
 	create(project: Project): void {
 		this.db
 			.prepare(
-				"INSERT INTO projects (id, name, description, created_at) VALUES (?, ?, ?, ?)",
+				"INSERT INTO projects (id, name, description, created_at, server, team) VALUES (?, ?, ?, ?, ?, ?)",
 			)
-			.run(project.id, project.name, project.description, project.createdAt);
+			.run(project.id, project.name, project.description, project.createdAt, project.server, project.team);
 	}
 
 	findByName(name: string): Project | null {
 		const row = this.db
 			.prepare(
-				"SELECT id, name, description, created_at FROM projects WHERE LOWER(name) = LOWER(?)",
+				"SELECT id, name, description, created_at, server, team FROM projects WHERE LOWER(name) = LOWER(?)",
 			)
 			.get(name.trim()) as ProjectRow | undefined;
 		return row ? rowToProject(row) : null;
@@ -44,7 +48,7 @@ export class ProjectRepo implements IProjectRepo {
 	list(): Project[] {
 		const rows = this.db
 			.prepare(
-				"SELECT id, name, description, created_at FROM projects ORDER BY name",
+				"SELECT id, name, description, created_at, server, team FROM projects ORDER BY name",
 			)
 			.all() as ProjectRow[];
 		return rows.map(rowToProject);

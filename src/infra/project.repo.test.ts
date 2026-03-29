@@ -29,6 +29,8 @@ describe("ProjectRepo", () => {
 			name: "myproject",
 			description: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
+			server: null,
+			team: null,
 			...overrides,
 		};
 	}
@@ -85,5 +87,20 @@ describe("ProjectRepo", () => {
 		repo.create(makeProject({ description: "A test project" }));
 		const found = repo.findByName("myproject");
 		expect(found?.description).toBe("A test project");
+	});
+
+	it("stores and retrieves server and team", () => {
+		const project: Project = {
+			id: "p1",
+			name: "remote-proj",
+			description: null,
+			createdAt: new Date().toISOString(),
+			server: "https://api.example.com",
+			team: "acme",
+		};
+		repo.create(project);
+		const found = repo.findByName("remote-proj");
+		expect(found?.server).toBe("https://api.example.com");
+		expect(found?.team).toBe("acme");
 	});
 });

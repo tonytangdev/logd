@@ -30,7 +30,9 @@ export function createDatabase(dbPath: string): Database.Database {
 			id TEXT PRIMARY KEY,
 			name TEXT NOT NULL UNIQUE,
 			description TEXT,
-			created_at TEXT NOT NULL DEFAULT (datetime('now'))
+			created_at TEXT NOT NULL DEFAULT (datetime('now')),
+			server TEXT DEFAULT NULL,
+			team TEXT DEFAULT NULL
 		);
 
 		CREATE TABLE IF NOT EXISTS decisions (
@@ -51,6 +53,15 @@ export function createDatabase(dbPath: string): Database.Database {
 			embedding float[1024] distance_metric=cosine
 		);
 	`);
+
+	const projectColumns = db.pragma("table_info(projects)") as { name: string }[];
+	const columnNames = projectColumns.map((c) => c.name);
+	if (!columnNames.includes("server")) {
+		db.exec("ALTER TABLE projects ADD COLUMN server TEXT DEFAULT NULL");
+	}
+	if (!columnNames.includes("team")) {
+		db.exec("ALTER TABLE projects ADD COLUMN team TEXT DEFAULT NULL");
+	}
 
 	return db;
 }
