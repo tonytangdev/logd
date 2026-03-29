@@ -7,13 +7,13 @@ export interface HealthDeps {
 }
 
 export function healthRoutes(deps: HealthDeps): Hono {
-	const app = new Hono();
+	const router = new Hono();
 
-	app.get("/health", (c) => {
+	router.get("/health", (c) => {
 		return c.json({ status: "ok" });
 	});
 
-	app.get("/health/ready", async (c) => {
+	router.get("/health/ready", async (c) => {
 		let dbStatus = "ok";
 		let ollamaStatus = "ok";
 
@@ -41,5 +41,5 @@ export function healthRoutes(deps: HealthDeps): Hono {
 		);
 	});
 
-	return app;
+	return router;
 }

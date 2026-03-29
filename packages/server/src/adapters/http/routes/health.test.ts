@@ -72,6 +72,29 @@ describe("health routes", () => {
 			expect(body.ollama).toBe("ok");
 		});
 
+		it("returns 503 when ollama returns non-2xx", async () => {
+			const mockDb = {
+				prepare: vi.fn(() => ({ get: vi.fn(() => ({ 1: 1 })) })),
+			} as unknown as Database.Database;
+			vi.stubGlobal(
+				"fetch",
+				vi.fn(async () => new Response("error", { status: 500 })),
+			);
+
+			const app = new Hono();
+			app.route(
+				"/",
+				healthRoutes({ db: mockDb, ollamaUrl: "http://localhost:11434" }),
+			);
+
+			const res = await app.request("/health/ready");
+			expect(res.status).toBe(503);
+			const body = await res.json();
+			expect(body.status).toBe("not_ready");
+			expect(body.db).toBe("ok");
+			expect(body.ollama).toBe("error");
+		});
+
 		it("returns 503 when ollama fails", async () => {
 			const mockDb = {
 				prepare: vi.fn(() => ({ get: vi.fn(() => ({ 1: 1 })) })),
