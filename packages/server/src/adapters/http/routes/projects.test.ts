@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
 import { Hono } from "hono";
-import { authMiddleware } from "../middleware/auth.js";
+import { describe, expect, it } from "vitest";
+import { ProjectService } from "../../../application/project.service.js";
 import { createInMemoryDatabase } from "../../persistence/database.js";
 import { SqliteProjectRepo } from "../../persistence/sqlite.project.repo.js";
-import { ProjectService } from "../../../application/project.service.js";
+import { authMiddleware } from "../middleware/auth.js";
 import { projectRoutes } from "./projects.js";
 
 const TOKEN = "test-token";

@@ -1,10 +1,10 @@
-import type Database from "better-sqlite3";
 import type {
 	Decision,
 	DecisionStatus,
 	SearchResult,
 	UpdateDecisionInput,
 } from "@logd/shared";
+import type Database from "better-sqlite3";
 import type { DecisionRepository } from "../../ports/decision.repository.js";
 
 interface DecisionRow {

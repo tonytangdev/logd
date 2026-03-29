@@ -1,5 +1,9 @@
 import { randomUUID } from "node:crypto";
-import type { CreateDecisionInput, Decision, DecisionStatus } from "@logd/shared";
+import type {
+	CreateDecisionInput,
+	Decision,
+	DecisionStatus,
+} from "@logd/shared";
 
 export function buildDecision(input: CreateDecisionInput): Decision {
 	const now = new Date().toISOString();
@@ -28,8 +32,7 @@ export function buildDocumentTemplate(decision: {
 	if (decision.context) lines.push(`Context: ${decision.context}`);
 	if (decision.alternatives?.length)
 		lines.push(`Alternatives: ${decision.alternatives.join(", ")}`);
-	if (decision.tags?.length)
-		lines.push(`Tags: ${decision.tags.join(", ")}`);
+	if (decision.tags?.length) lines.push(`Tags: ${decision.tags.join(", ")}`);
 	if (decision.status) lines.push(`Status: ${decision.status}`);
 	return lines.join("\n");
 }

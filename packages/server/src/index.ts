@@ -1,11 +1,11 @@
 import { serve } from "@hono/node-server";
-import { DecisionService } from "./application/decision.service.js";
-import { ProjectService } from "./application/project.service.js";
 import { OllamaProvider } from "./adapters/embedding/ollama.provider.js";
 import { createApp } from "./adapters/http/app.js";
 import { createDatabase } from "./adapters/persistence/database.js";
 import { SqliteDecisionRepo } from "./adapters/persistence/sqlite.decision.repo.js";
 import { SqliteProjectRepo } from "./adapters/persistence/sqlite.project.repo.js";
+import { DecisionService } from "./application/decision.service.js";
+import { ProjectService } from "./application/project.service.js";
 import { loadConfig } from "./config.js";
 
 const config = loadConfig();

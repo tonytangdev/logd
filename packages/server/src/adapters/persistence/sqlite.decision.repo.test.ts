@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import type { Decision } from "@logd/shared";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createInMemoryDatabase } from "./database.js";
 import { SqliteDecisionRepo } from "./sqlite.decision.repo.js";
 import { SqliteProjectRepo } from "./sqlite.project.repo.js";
@@ -37,8 +37,8 @@ describe("SqliteDecisionRepo", () => {
 		repo.create(d, fakeEmbedding);
 		const found = repo.findById("d-1");
 		expect(found).not.toBeNull();
-		expect(found!.title).toBe("Use Hono");
-		expect(found!.alternatives).toEqual(["Express", "Fastify"]);
+		expect(found?.title).toBe("Use Hono");
+		expect(found?.alternatives).toEqual(["Express", "Fastify"]);
 	});
 
 	it("findById returns null for missing", () => {
@@ -48,9 +48,10 @@ describe("SqliteDecisionRepo", () => {
 	it("update changes fields and updatedAt", () => {
 		repo.create(makeDecision(), fakeEmbedding);
 		repo.update("d-1", { title: "Use Fastify" }, fakeEmbedding);
-		const found = repo.findById("d-1")!;
-		expect(found.title).toBe("Use Fastify");
-		expect(found.updatedAt).not.toBe("2026-01-01T00:00:00.000Z");
+		const found = repo.findById("d-1");
+		expect(found).not.toBeNull();
+		expect(found?.title).toBe("Use Fastify");
+		expect(found?.updatedAt).not.toBe("2026-01-01T00:00:00.000Z");
 	});
 
 	it("delete removes from both tables", () => {
