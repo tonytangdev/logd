@@ -78,6 +78,11 @@ describe("DecisionService", () => {
 		expect(repo.list).toHaveBeenCalledWith({ project: "proj" });
 	});
 
+	it("list passes teamId to repo", () => {
+		service.list({ teamId: "t-1" });
+		expect(repo.list).toHaveBeenCalledWith({ teamId: "t-1" });
+	});
+
 	it("search embeds query then calls searchByVector, filters by threshold", async () => {
 		const mockResults: SearchResult[] = [
 			{
@@ -119,5 +124,15 @@ describe("DecisionService", () => {
 		expect(results).toHaveLength(1);
 		expect(results[0].score).toBe(0.9);
 		expect(embedding.embed).toHaveBeenCalled();
+	});
+
+	it("search passes teamId to searchByVector", async () => {
+		await service.search("proj", "query", 0.5, 10, "t-1");
+		expect(repo.searchByVector).toHaveBeenCalledWith(
+			fakeEmbedding,
+			10,
+			"proj",
+			"t-1",
+		);
 	});
 });

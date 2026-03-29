@@ -14,10 +14,12 @@ export interface DecisionRepository {
 		project?: string;
 		status?: DecisionStatus;
 		limit?: number;
+		teamId?: string;
 	}): Decision[];
 	searchByVector(
 		embedding: number[],
 		limit: number,
 		project?: string,
+		teamId?: string,
 	): SearchResult[];
 }
