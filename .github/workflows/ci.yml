@@ -31,6 +31,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test -w packages/cli -- --exclude 'src/cli/commands/*.test.ts' --exclude 'tests/e2e/**'
+      - run: npm run test -w packages/server
 
   release-please:
     needs: [check, test]
