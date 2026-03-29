@@ -1,0 +1,9 @@
+node_modules
+.git
+dist
+*.db
+.env
+.env.*
+!.env.example
+docs
+**/*.test.ts
