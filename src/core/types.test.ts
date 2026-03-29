@@ -9,6 +9,7 @@ import {
 	type SearchResult,
 	type UpdateDecisionInput,
 } from "./types.js";
+import type { DecisionBackend, LocalDecisionSearch, RemoteDecisionSearch } from "./types.js";
 
 describe("DECISION_STATUSES", () => {
 	it("contains exactly active, superseded, deprecated", () => {
@@ -126,5 +127,32 @@ describe("type contracts", () => {
 		expect(valid).toHaveLength(3);
 		// @ts-expect-error — "invalid" is not a valid DecisionStatus
 		const _invalid: DecisionStatus = "invalid";
+	});
+});
+
+describe("backend interfaces", () => {
+	it("DecisionBackend has required methods", () => {
+		const _check = (backend: DecisionBackend) => {
+			backend.create({} as Decision, []);
+			backend.findById("id");
+			backend.update("id", {});
+			backend.delete("id");
+			backend.list();
+		};
+		expect(_check).toBeDefined();
+	});
+
+	it("LocalDecisionSearch has searchByVector", () => {
+		const _check = (search: LocalDecisionSearch) => {
+			search.searchByVector([], 10);
+		};
+		expect(_check).toBeDefined();
+	});
+
+	it("RemoteDecisionSearch has searchByQuery", () => {
+		const _check = (search: RemoteDecisionSearch) => {
+			search.searchByQuery("proj", "query", 0.5, 10);
+		};
+		expect(_check).toBeDefined();
 	});
 });

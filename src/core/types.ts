@@ -86,3 +86,32 @@ export interface IDecisionRepo {
 export interface IEmbeddingClient {
 	embed(input: string): Promise<number[]>;
 }
+
+export interface DecisionBackend {
+	create(decision: Decision, embedding: number[]): Promise<void>;
+	findById(id: string): Promise<Decision | null>;
+	update(id: string, input: UpdateDecisionInput, embedding?: number[]): Promise<void>;
+	delete(id: string): Promise<void>;
+	list(options?: {
+		project?: string;
+		status?: DecisionStatus;
+		limit?: number;
+	}): Promise<Decision[]>;
+}
+
+export interface LocalDecisionSearch {
+	searchByVector(
+		embedding: number[],
+		limit: number,
+		project?: string,
+	): Promise<SearchResult[]>;
+}
+
+export interface RemoteDecisionSearch {
+	searchByQuery(
+		project: string,
+		query: string,
+		threshold: number,
+		limit: number,
+	): Promise<SearchResult[]>;
+}
