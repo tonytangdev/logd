@@ -40,6 +40,115 @@ Before saving a decision, determine which logd project to use:
 5. **Multiple matches** — present options, let user pick
 6. **No match** — ask: "No matching project. Create `<repo-name>`?" If yes, run `logd project create <repo-name>`
 
+## CLI Reference
+
+### add (save a decision)
+
+```
+logd add <title> -p <project> [options]
+```
+
+- `-p, --project <project>` — Project name **(required)**
+- `-c, --context <context>` — Decision context
+- `-a, --alternatives <alt>` — Alternative considered (repeatable)
+- `-t, --tags <tag>` — Tag (repeatable)
+- `-s, --status <status>` — Status: `active` (default), `superseded`, `deprecated`
+- `-l, --links <link>` — Related link (repeatable)
+
+### search (semantic search)
+
+```
+logd search <query> [options]
+```
+
+- `-p, --project <project>` — Filter by project
+- `-n, --limit <number>` — Max results (default: 5)
+- `-t, --threshold <number>` — Minimum similarity score
+- `-v, --verbose` — Show all fields
+
+Use `search` when the user asks a question about past decisions ("why did we...", "what did we decide about...").
+
+### list (browse/filter decisions)
+
+```
+logd list [options]
+```
+
+- `-p, --project <project>` — Filter by project
+- `-s, --status <status>` — Filter by status
+- `-n, --limit <number>` — Max results (default: 20)
+
+Use `list` when the user wants to browse decisions without a specific query (e.g., "show me all active decisions", "list decisions tagged infrastructure").
+
+### show (full detail for one decision)
+
+```
+logd show <id>
+```
+
+Use when the user wants to see the full detail of a specific decision by ID.
+
+### edit (update an existing decision)
+
+```
+logd edit <id> [options]
+```
+
+- `-p, --project <project>` — Project name
+- `--title <title>` — Decision title
+- `-c, --context <context>` — Decision context
+- `-a, --alternatives <alt>` — Alternative considered (repeatable)
+- `-t, --tags <tag>` — Tag (repeatable)
+- `-s, --status <status>` — Decision status
+- `-l, --links <link>` — Related link (repeatable)
+
+Use when the user says "update that decision", "change the status to superseded", "add a tag to that decision", etc.
+
+### delete (remove a decision)
+
+```
+logd delete <id>
+```
+
+Use when the user explicitly asks to remove a decision. Confirm before running.
+
+### project create
+
+```
+logd project create <name> [options]
+```
+
+- `-d, --description <desc>` — Project description
+- `--server <url>` — Remote server URL
+- `--team <team>` — Team name on the remote server
+
+### project list
+
+```
+logd project list
+```
+
+### login / logout (remote server auth)
+
+```
+logd login <url> --token <token>
+logd logout <url>
+```
+
+### server list (list authenticated servers)
+
+```
+logd server list
+```
+
+### serve (MCP server)
+
+```
+logd serve
+```
+
+Starts the Model Context Protocol server over stdio.
+
 ## Save Flow
 
 When a decision is detected (or user forces a save):
@@ -66,6 +175,15 @@ When the user asks about past decisions ("what did we decide about...", "why did
 2. **Run:** `logd search "<query>" -v` (add `-p <project>` if resolved). Use default limit (5) and threshold — do not add `--limit` or `--threshold` flags unless the user asks.
 3. **Present results** — summarize each decision: title, context, alternatives, date (createdAt)
 4. **No results** — tell the user, suggest broadening the query or checking other projects
+
+## Edit / Delete Flow
+
+When the user wants to modify or remove an existing decision:
+
+1. If the user references a decision by name rather than ID, use `search` or `list` to find it first
+2. Use `logd show <id>` to confirm the right decision before editing or deleting
+3. For edits, only pass the flags that are changing — unchanged fields are preserved
+4. For deletes, confirm with the user before running
 
 ## Error Handling
 
@@ -116,4 +234,25 @@ Agent: [runs logd search "why Redis caching choice" -p my-api -v]
          Alternatives: Memcached
          Tags: caching, infrastructure
          Decided: 2026-03-15
+```
+
+### Edit
+
+```
+User: Mark that Redis decision as superseded, we switched to Valkey.
+
+Agent: [runs logd search "Redis caching" -p my-api -v, finds id abc-123]
+       [runs logd edit abc-123 -s superseded]
+       Updated decision abc-123 — status is now "superseded".
+```
+
+### List
+
+```
+User: Show me all active decisions for this project.
+
+Agent: [resolves project to "my-api"]
+       [runs logd list -p my-api -s active]
+       Here are the active decisions for my-api:
+       ...
 ```
